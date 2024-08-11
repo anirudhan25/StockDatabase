@@ -1,6 +1,8 @@
 const express = require('express');
+const db =  require('./config/db')
 const app = express();
 const port = 8000;
+db();
 
 app.listen(port, () => {
     console.log("server hosted on port ", port);
