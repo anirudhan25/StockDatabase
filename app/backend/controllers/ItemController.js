@@ -2,6 +2,7 @@ const Item = require('../models/ItemModel');
 
 // get item 
 const getItem = async (req, res) => {
+    console.log('getting item...')  // for testing 
     try {
         // querying the database for items with Supplier "Reynolds"
         const items = await Item.find({ Supplier: 'Reynolds' });

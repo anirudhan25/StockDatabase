@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const { PagePromise } = require('openai/core');
 const db =  require('./config/db')
@@ -9,10 +10,10 @@ db();
 const itemRoutes = require('./routes/item');
 
 // register routes
-app.use('api/item', itemRoutes)
+app.use('/api/item', itemRoutes)
 
 app.listen(port, () => {
-    console.log(`Server hosted on https://localhost/${port}/`);
+    console.log(`Server hosted on https://localhost/${port}`);
 });
 
 
