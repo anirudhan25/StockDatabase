@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 // structure of each item in the database
-const itemSchema = new Schema({
+const stockSchema = new Schema({
     Product: {
         type: String,
         required: true 
@@ -19,4 +19,4 @@ const itemSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('Item', itemSchema, 'Stock');
+module.exports = mongoose.model('Stock', stockSchema, 'Stock');

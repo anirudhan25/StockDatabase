@@ -7,10 +7,10 @@ const port = 8000;
 db();
 
 // import routes
-const itemRoutes = require('./routes/item');
+const stockRoutes = require('./routes/stock');
 
 // register routes
-app.use('/api/item', itemRoutes)
+app.use('/api/stock', stockRoutes)
 
 app.listen(port, () => {
     console.log(`Server hosted on https://localhost/${port}`);
