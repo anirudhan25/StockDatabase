@@ -1,6 +1,5 @@
 const Stock = require('../models/StockModel');
 
-
 const getStockBySupplier = async (req, res) => {
     try {
         // querying the database for items from specified Supplier
@@ -63,6 +62,21 @@ const getSupplier = async (req, res) => {
     }
 }
 
+const addItem = async (req, res) => {
+    const { Product, Quantity, Supplier } = req.body;
+    const item = new Stock({ Product, Quantity, Supplier });
+    await Stock.save();
+
+    res.json(item);
+}
+
+const removeItem = async (req, res) => {
+    const item = await Stock.findById(req.params.item_id)
+    await Stock.deleteOne(item);
+
+    res.json(item);
+}
+
 
 // export functions within an object
-module.exports = { getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier } 
+module.exports = { getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, removeItem } 

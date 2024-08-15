@@ -13,7 +13,7 @@ const stockRoutes = require('./routes/stock');
 app.use('/api/stock', stockRoutes)
 
 app.listen(port, () => {
-    console.log(`Server hosted on https://localhost/${port}`);
+    console.log(`Server hosted on http://localhost/${port}`);
 });
 
 
