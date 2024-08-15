@@ -3,7 +3,7 @@ const Stock = require('../models/StockModel');
 
 const getStockBySupplier = async (req, res) => {
     try {
-        // querying the database for items with Supplier
+        // querying the database for items from specified Supplier
         const items = await Stock.find({ Supplier: req.params.supplier });
 
         // sending back the found items as a response
@@ -16,6 +16,16 @@ const getStockBySupplier = async (req, res) => {
 const getStockByName = async (req, res) => {
     try {
         const items = await Stock.find({ Product: req.params.item });
+        res.json(items);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+const getStockByQuantity = async (req, res) => {
+    try {
+        // gets items of similar quantity (e.g. 30g, 10x30g, 30Gx5)
+        const items = await Stock.find({ Quantity: { $regex: req.params.quantity, $options: 'i' } });
         res.json(items);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -53,5 +63,6 @@ const getSupplier = async (req, res) => {
     }
 }
 
+
 // export functions within an object
-module.exports = { getStockBySupplier, getStockByName, getSimilarStockByName, getQuantity, getSupplier } 
+module.exports = { getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier } 
