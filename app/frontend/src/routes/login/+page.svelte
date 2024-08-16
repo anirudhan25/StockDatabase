@@ -18,8 +18,8 @@
   const handleClick = async (e) => {
     e.preventDefault();
     
-    const correctUsername = "username123";
-    const correctPassword = "password123";
+    const correctUsername = "username";
+    const correctPassword = "eduroam";
  
     if (password === correctPassword && username === correctUsername) {
       scale = 1.25;
@@ -81,7 +81,7 @@
           />
         </div>
         
-        <button class="bg-black text-white mt-[1.8vh] h-[5vh] w-[29vw] rounded-md cursor-pointer text-[1.5vw] hover:bg-[#033839]">
+        <button class="bg-black text-white mt-[1.8vh] h-[5vh] w-[29vw] rounded-md cursor-pointer text-[1.5vw] hover:bg-[#1d5d39]">
           Enter
         </button>
       </form>
