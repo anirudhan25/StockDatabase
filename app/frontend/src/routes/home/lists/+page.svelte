@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte';
+  import axios from 'axios';
+  const url = 'http://localhost:8000/api/stock'
   let fadeIn = false;
 
   onMount(() => {
@@ -13,6 +15,20 @@
   }
 
   const suppliers = ["Bidfood", "Reynolds", "Birtwistles", "DeliceDeFrance", "DestinyFoods"];
+
+  const getFromSupplier = (supplier) => {
+    console.log(supplier);
+    axios.get(`${url}/from/${supplier}`).then((response) => {
+        // get items from a certain supplier
+        const items = response.data;
+        console.log(items);
+        // const payload = {token, user: account};  /* use later when token is implemented */
+        const payload = {items: items}
+        console.log(payload)
+        // localStorage.setItem("user", JSON.stringify(payload));
+        // dispatch({ type: "GET_FROM_SUPPLIER", payload: payload });  /* used to alert an update for the state reducer listener, use later if implemented */
+    });
+  }
 </script>
 
 <style>
@@ -67,16 +83,16 @@
   }
 
   .card {
-    background-color: #d1dfda; /* background color of the card */
-    color: #174b2e; /* text color */
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #d1dfda; /* Background color of the card */
+    color: #174b2e; /* Text color */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
     transition: transform 0.3s ease, background-color 0.3s ease;
   }
 
   .card:hover {
-    background-color: #ffffff;
-    transform: translateY(-10px); /* lift the card slightly on hover */
+    background-color: #ffffff; /* Change background color on hover */
+    transform: translateY(-10px); /* Lift the card slightly on hover */
     scale: 1.05;
   }
 </style>
@@ -87,7 +103,13 @@
     <div class="content {fadeIn ? 'fade-in' : ''} flex text-center justify-center items-center h-full bg-cover bg-center">
         
         <div class="flex btn-group-vertical h-[60vh]">
-            <h1 class="text-xl text-center text-[7vh] mt-[2vh] font-serif">Home page</h1>
+            <h1 class="text-xl text-center text-[7vh] mt-[2vh] font-serif">Your lists</h1>
+
+            <div class="snap-x scroll-px-4 snap-mandatory scroll-smooth flex gap-5 overflow-x-auto px-4 py-10 w-[90vw] border-none">
+                {#each suppliers as supplier, i}
+                    <div class="mt-[9vh] snap-start shrink-0 card py-20 w-40 md:w-80 text-center text-[4vh] font-semibold font-serif" on:click={() => getFromSupplier(suppliers[i])}>{supplier}</div>
+                {/each}
+            </div>
         </div>
 
     </div>

@@ -1,7 +1,3 @@
-
-
-
-
 <script>
   import { goto } from "$app/navigation";
   import { fly } from "svelte/transition";
@@ -54,11 +50,11 @@
       in:fly={{ x: 200, duration: 500 }}
       out:fly={{ x: -200, duration: 500 }}
     >
-      <h1 class="text-[3vw] mt-[4vh] text-black">Log in</h1>
+      <h1 class="text-[3vw] mt-[4vh] text-black font-serif">Log in</h1>
 
       <form class="flex flex-col items-center p-0 w-full mt-[12vh]" on:submit|preventDefault={handleClick}>
         
-        <h2 class="text-black text-lg mb-3 self-start text-[1.5vw]">Username</h2>
+        <h2 class="text-black text-lg mb-3 self-start text-[1.5vw] font-serif">Username</h2>
         <!-- container for person icon and username input field -->
         <div class="relative w-full">
           <i class="fas fa-user absolute left-3 top-[2.85vh] transform -translate-y-1/2 text-gray-500"></i>
@@ -69,7 +65,7 @@
           />
         </div>
 
-        <h2 class="text-black text-lg mb-3 self-start text-[1.5vw]">Password</h2>
+        <h2 class="text-black text-lg mb-3 self-start text-[1.5vw] font-serif">Password</h2>
         <!-- container for lock icon and password input field -->
         <div class="relative w-full">
           <i class="fas fa-lock absolute left-3 top-[2.85vh] transform -translate-y-1/2 text-gray-500"></i>
@@ -81,7 +77,7 @@
           />
         </div>
         
-        <button class="bg-black text-white mt-[1.8vh] h-[5vh] w-[29vw] rounded-md cursor-pointer text-[1.5vw] hover:bg-[#1d5d39]">
+        <button class="bg-black text-white mt-[1.8vh] h-[5vh] w-[29vw] rounded-md cursor-pointer text-[1.5vw] hover:bg-[#1d5d39] font-sans">
           Enter
         </button>
       </form>
