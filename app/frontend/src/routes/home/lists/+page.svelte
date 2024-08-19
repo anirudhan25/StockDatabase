@@ -20,11 +20,10 @@
     console.log(supplier);
     axios.get(`${url}/from/${supplier}`).then((response) => {
         // get items from a certain supplier
-        const items = response.data;
-        console.log(items);
+        const products = response.data;
         // const payload = {token, user: account};  /* use later when token is implemented */
-        const payload = {items: items}
-        console.log(payload)
+        const payload = {products: products.sort((a, b) => a.Product - b.Product)};
+        console.log(payload);
         // localStorage.setItem("user", JSON.stringify(payload));
         // dispatch({ type: "GET_FROM_SUPPLIER", payload: payload });  /* used to alert an update for the state reducer listener, use later if implemented */
     });
@@ -83,16 +82,16 @@
   }
 
   .card {
-    background-color: #d1dfda; /* Background color of the card */
-    color: #174b2e; /* Text color */
-    border-radius: 10px; /* Rounded corners */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    background-color: #d1dfda; /* background color of the card */
+    color: #174b2e; /* text color */
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, background-color 0.3s ease;
   }
 
   .card:hover {
-    background-color: #ffffff; /* Change background color on hover */
-    transform: translateY(-10px); /* Lift the card slightly on hover */
+    background-color: #ffffff;
+    transform: translateY(-10px);
     scale: 1.05;
   }
 </style>
@@ -103,7 +102,7 @@
     <div class="content {fadeIn ? 'fade-in' : ''} flex text-center justify-center items-center h-full bg-cover bg-center">
         
         <div class="flex btn-group-vertical h-[60vh]">
-            <h1 class="text-xl text-center text-[7vh] mt-[2vh] font-serif">Your lists</h1>
+            <h1 class="text-xl text-center text-[8vh] mt-[2vh] font-serif">Your lists</h1>
 
             <div class="snap-x scroll-px-4 snap-mandatory scroll-smooth flex gap-5 overflow-x-auto px-4 py-10 w-[90vw] border-none">
                 {#each suppliers as supplier, i}
