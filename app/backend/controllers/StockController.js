@@ -63,12 +63,27 @@ const getSupplier = async (req, res) => {
 }
 
 const addItem = async (req, res) => {
-    const { Product, Quantity, Supplier } = req.body;
-    const item = new Stock({ Product, Quantity, Supplier });
-    await Stock.save();
+    try {
+        console.log("adding item");
 
-    res.json(item);
+        // Destructure the body to get the fields
+        const { Product, Quantity, Supplier } = req.body;
+
+        // Create a new instance of the Stock model
+        const item = new Stock({ Product, Quantity, Supplier });
+
+        // Save the new item to the database
+        await item.save();
+
+        // Log the saved item and send it as a response
+        console.log("Item added:", item);
+        res.json(item);
+    } catch (err) {
+        console.error("Error adding item:", err);
+        res.status(500).json({ error: err.message });
+    }
 }
+
 
 const removeItem = async (req, res) => {
     const item = await Stock.findById(req.params.item_id)

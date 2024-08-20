@@ -6,10 +6,10 @@ const { getListByName, getListByID, addList, removeListByName, removeListByID } 
 
 // define routes
 // route url already starts with '/api/lists'
-router.get('/:get/:name', getListByName);
-router.get('/:get/:id', getListByID);
+router.get('/get/:name', getListByName);
+router.get('/get/:id', getListByID);
 
-router.post('/:add/:name', addList);
+router.post('/add/:name', addList);
 
 router.delete('/delete/:name', removeListByName);
 router.delete('/delete/:id', removeListByID);
