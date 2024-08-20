@@ -7,7 +7,7 @@
   onMount(() => {
     setTimeout(() => {
       fadeIn = true;
-    }, 50); // short delay to ensure the initial render completes
+    }, 100); // short delay to ensure the initial render completes
   });
 
   const onCardClick = (index) => {
@@ -22,7 +22,7 @@
         // get items from a certain supplier
         const products = response.data;
         // const payload = {token, user: account};  /* use later when token is implemented */
-        const payload = {products: products.sort((a, b) => a.Product - b.Product)};
+        const payload = products.sort((a, b) => a.Product.localeCompare(b.Product));
         console.log(payload);
         // localStorage.setItem("user", JSON.stringify(payload));
         // dispatch({ type: "GET_FROM_SUPPLIER", payload: payload });  /* used to alert an update for the state reducer listener, use later if implemented */
@@ -94,6 +94,27 @@
     transform: translateY(-10px);
     scale: 1.05;
   }
+
+  .icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    width: 80px;
+    height: 80px;
+}
+
+.icon-container i {
+    color: #d1dfda;
+    font-size: 3em; /* Increase the icon size */
+    transition: transform 0.3s ease; /* Smooth scaling of the icon */
+}
+
+.icon-container:hover i {
+    color: #ffffff; 
+    transform: scale(1.1); /* Scale the icon itself on hover */
+}
+
 </style>
 
 <div class="background {fadeIn ? 'fade-in' : ''}">
@@ -102,12 +123,17 @@
     <div class="content {fadeIn ? 'fade-in' : ''} flex text-center justify-center items-center h-full bg-cover bg-center">
         
         <div class="flex btn-group-vertical h-[60vh]">
-            <h1 class="text-xl text-center text-[8vh] mt-[2vh] font-serif">Your lists</h1>
+            <h1 class="text-2xl text-center text-[8vh] mt-[2vh] font-serif">Your lists</h1>
 
             <div class="snap-x scroll-px-4 snap-mandatory scroll-smooth flex gap-5 overflow-x-auto px-4 py-10 w-[90vw] border-none">
                 {#each suppliers as supplier, i}
-                    <div class="mt-[9vh] snap-start shrink-0 card py-20 w-40 md:w-80 text-center text-[4vh] font-semibold font-serif" on:click={() => getFromSupplier(suppliers[i])}>{supplier}</div>
+                    <div class="mt-[9vh] snap-start shrink-0 card py-20 w-40 md:w-80 text-center text-[4vh] font-semibold font-serif" on:click={() => getFromSupplier(suppliers[i])} style="background-color: #d1dfda; color: #174b2e;">
+                        {supplier}
+                    </div>
                 {/each}
+                <div class="mt-[14.5vh] snap-start shrink-0 icon-container">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
             </div>
         </div>
 

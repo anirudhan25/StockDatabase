@@ -5,7 +5,7 @@
   onMount(() => {
     setTimeout(() => {
       fadeIn = true;
-    }, 50); // short delay to ensure the initial render completes
+    }, 100); // short delay to ensure the initial render completes
   });
 
   const onCardClick = (index) => {

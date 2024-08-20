@@ -8,9 +8,11 @@ const port = 8000;
 db();
 
 // middleware
-app.use(cors({
-  origin: 'http://localhost:5174'
-}));
+/* use this code block to specify strictly which frontend url to allow resource access */
+// app.use(cors({
+//   origin: 'http://localhost:5174'
+// }));
+app.use(cors());
 app.use(express.json());
 
 // import routes
