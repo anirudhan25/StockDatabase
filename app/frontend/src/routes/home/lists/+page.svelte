@@ -127,7 +127,7 @@
 
             <div class="snap-x scroll-px-4 snap-mandatory scroll-smooth flex gap-5 overflow-x-auto px-4 py-10 w-[90vw] border-none">
                 {#each suppliers as supplier, i}
-                    <div class="mt-[9vh] snap-start shrink-0 card py-20 w-40 md:w-80 text-center text-[4vh] font-semibold font-serif" on:click={() => getFromSupplier(suppliers[i])} style="background-color: #d1dfda; color: #174b2e;">
+                    <div class="mt-[9vh] snap-start shrink-0 card py-20 w-40 md:w-80 text-center text-[4vh] font-semibold font-serif" on:click={() => getFromSupplier(suppliers[i])}>
                         {supplier}
                     </div>
                 {/each}
