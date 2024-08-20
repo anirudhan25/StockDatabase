@@ -17,9 +17,11 @@ app.use(express.json());
 
 // import routes
 const stockRoutes = require('./routes/stock');
+const listRoutes = require('./routes/lists');
 
 // register routes
-app.use('/api/stock', stockRoutes)
+app.use('/api/stock', stockRoutes);
+app.use('/api/lists', listRoutes);
 
 app.listen(port, () => {
     console.log(`Server hosted on http://localhost:${port}`);
