@@ -10,7 +10,7 @@
   let fadeIn = false;
   let selectedItems = []; // using an array for selected items
   const supplierColors = {
-    'Bidfood': '#eb3617',
+    'Bidfood': '#d42000',
     'Reynolds': '#FF5733',
     'Birtwistles': '#4e0b58',
     'DeliceDeFrance': '#3357FF',
