@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Stock = require('../models/StockModel');
 
 const getStockBySupplier = async (req, res) => {
@@ -66,18 +67,15 @@ const addItem = async (req, res) => {
     try {
         console.log("adding item");
 
-        // Destructure the body to get the fields
+        // destructure body
         const { Product, Quantity, Supplier } = req.body;
 
-        // Create a new instance of the Stock model
+        // create a new instance of Stock model
         const item = new Stock({ Product, Quantity, Supplier });
 
-        // Save the new item to the database
+        // save the new item to the database
         await item.save();
-
-        // Log the saved item and send it as a response
-        console.log("Item added:", item);
-        res.json(item);
+        res.json({item});
     } catch (err) {
         console.error("Error adding item:", err);
         res.status(500).json({ error: err.message });

@@ -10,7 +10,7 @@ const stockSchema = new Schema({
 
     Quantity: {
         type: String,
-        required: true 
+        required: false 
     },
 
     Supplier: {
