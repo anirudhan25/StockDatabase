@@ -99,7 +99,6 @@
 											>{product.Supplier}</span
 										></td
 									>
-
 									<td class="bg-[#26342c] rounded-lg border-[#000000] border-md"
 										>{product.Frozen}</td
 									>
