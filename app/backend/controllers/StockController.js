@@ -1,6 +1,17 @@
 const mongoose = require('mongoose');
 const Stock = require('../models/StockModel');
 
+const getAllStock = async (req, res) => {
+    try {
+        const items = await Stock.find({});
+
+        // sending back the found items as a response
+        res.json(items);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 const getStockBySupplier = async (req, res) => {
     try {
         // querying the database for items from specified Supplier
@@ -84,12 +95,11 @@ const addItem = async (req, res) => {
 
 
 const removeItem = async (req, res) => {
-    const item = await Stock.findById(req.params.item_id)
-    await Stock.deleteOne(item);
-
+    // const item = await Stock.findById(req.params.item);
+    const item = await Stock.find(req.params.item);
     res.json(item);
 }
 
 
 // export functions within an object
-module.exports = { getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, removeItem } 
+module.exports = { getAllStock, getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, removeItem } 
