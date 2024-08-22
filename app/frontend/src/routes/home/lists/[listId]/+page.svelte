@@ -59,6 +59,7 @@
             products = [newProduct, ...products];
             newProduct = { Product: '', Quantity: '', Supplier: '', Frozen: 'No' };
             showAddRow = false;
+            console.log(products);
         }
     };
 
@@ -288,7 +289,13 @@
         border-radius: 5px;
     }
 
-    td button {
+    td input:focus, td select:focus {
+        outline: 2px solid #ffffff;
+        outline-offset: 2px;
+    }
+
+
+    .confirm-button {
         padding: 10px 15px;
         background-color: #21a134;
         color: #d1dfda;
@@ -298,16 +305,28 @@
         transition: background-color 0.2s ease-in-out;
     }
 
-    td button:hover {
+    .confirm-button:hover {
         background-color: #1bb031;
     }
 
-    .cancel-button {
+     .cancel-button {
+        padding: 10px 15px;
         background-color: #d9534f;
+        color: #d1dfda;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
     }
 
     .cancel-button:hover {
         background-color: #c9302c;
+    }
+
+    .flex-buttons {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 </style>
 
@@ -345,7 +364,7 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <button on:click={addProduct}>Add</button>
+                                    <button on:click={addProduct} class="confirm-button">Add</button>
                                     <button class="cancel-button" on:click={cancelAddProduct}>Cancel</button>
                                 </td>
                             </tr>
@@ -381,8 +400,12 @@
             </div>
 
             {#if !showAddRow}
-                <div class="icon-container mt-[1.5vh] ml-[1.55vw]" on:click={() => showAddRow = true}>
-                    <i class="bi bi-plus-circle-fill"></i>
+                <div class="flex-buttons">
+                    <div class="icon-container mt-[1.5vh] ml-[1.55vw] fade-in" on:click={() => showAddRow = true}>
+                        <i class="bi bi-plus-circle-fill"></i>
+                    </div>
+                    <button class="confirm-button mt-[1.5vh] ml-[65vw] w-[6vw]">Save</button>
+                    <button class="confirm-button mt-[1.5vh] w-[6vw]">Export</button>
                 </div>
             {/if}
         </div>
