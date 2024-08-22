@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const stockSchema = new Schema({
     Product: {
         type: String,
-        required: true 
+        required: false 
     },
 
     Quantity: {
@@ -15,7 +15,12 @@ const stockSchema = new Schema({
 
     Supplier: {
         type: String,
-        required: true 
+        required: false 
+    },
+
+    Frozen: {
+        type: String,
+        required: false 
     }
 });
 

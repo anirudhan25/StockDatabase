@@ -12,7 +12,7 @@ router.get('/quantity/:quantity', getStockByQuantity);
 router.get('/like/:item', getSimilarStockByName);
 router.get('/:item/quantity', getQuantity);
 router.get('/:item/supplier', getSupplier);
-router.post('/add/:item', getSupplier);
-router.delete('/remove/:item', getSupplier);
+router.post('/add/:item', addItem);
+router.delete('/remove/:item', removeItem);
 
 module.exports = router;
