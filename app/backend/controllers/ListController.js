@@ -2,8 +2,8 @@ const Stock = require('../models/ListModel');
 
 const getListByName = async (req, res) => {
     try {
-        console.log(`getting list: ${req.params.name}`);
-        const list = await List.findOne({ Name: req.params.name });
+        console.log(req.params.name);
+        const list = await List.findById({ Name: req.params.name });
         res.json(list);
     } catch (err) {
         res.status(500).json({ error: err.message });

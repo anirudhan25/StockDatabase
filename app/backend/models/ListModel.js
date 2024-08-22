@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const Stock = require('../models/StockModel');
 
+// structure of each list of items in the database
 const listSchema = new Schema({
     Name: {
         type: String,
         required: true 
     },
     Products: {
-        type: [Stock.schema],
+        type: String,
         required: true 
     }
 });

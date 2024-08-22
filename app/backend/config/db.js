@@ -10,7 +10,7 @@ const db = async () => {
         console.log(`Cluster connected: ${connection.connection.host}`);
         console.log(`Connected to database: ${connection.connection.name}`);
     } catch (error) {
-        console.log(`Error connecting to database: \n${error}`);
+        console.log('Error connecting to database.');
     }
 }
 
