@@ -86,7 +86,9 @@ const addItem = async (req, res) => {
 
         // save the new item to the database
         await item.save();
-        res.json({item});
+
+        // respond with the created item
+        res.status(201).json({ item });
     } catch (err) {
         console.error("Error adding item:", err);
         res.status(500).json({ error: err.message });
@@ -95,10 +97,22 @@ const addItem = async (req, res) => {
 
 
 const removeItem = async (req, res) => {
-    // const item = await Stock.findById(req.params.item);
-    const item = await Stock.find(req.params.item);
-    res.json(item);
-}
+    try {
+        const itemName = req.params.item;
+        const item = await Stock.findOneAndDelete({ Product: itemName });
+
+        if (!item) {
+            return res.status(404).json({ error: 'Item not found' });
+        }
+
+        console.log("Deleted item:", item);
+        res.json(item);
+    } catch (err) {
+        console.error("Error deleting item:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
 
 
 // export functions within an object
