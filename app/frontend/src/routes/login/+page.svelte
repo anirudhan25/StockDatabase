@@ -21,7 +21,7 @@
       scale = 1.25;
       containerVisible = false;
       await opacity.set(0);
-      goto("/home");
+      goto("/home/lists/all");
     } else {
       username = "";
       password = "";

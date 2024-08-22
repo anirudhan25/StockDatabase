@@ -5,7 +5,7 @@ const router = express.Router();
 const { getAllStock, getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, removeItem } = require('../controllers/StockController');
 
 // define routes
-router.get('/get/all', getAllStock);
+router.get('/from/all', getAllStock);
 router.get('/from/:supplier', getStockBySupplier);
 router.get('/get/:item', getStockByName);
 router.get('/quantity/:quantity', getStockByQuantity);
