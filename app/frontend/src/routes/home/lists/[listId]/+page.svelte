@@ -27,6 +27,16 @@
 		}
 	};
 
+    const removeItem = async (productName) => {
+		try {
+            /* delete item from database when saving  */
+			// await axios.delete(`${url}/remove/${productName}`);
+			products = products.filter(product => product.Product !== productName);
+		} catch (error) {
+			console.error('Error removing item:', error);
+		}
+	};
+
 	const toggleSelection = (product) => {
 		const productId = product.Product;
 		const index = selectedItems.indexOf(productId);
@@ -204,16 +214,24 @@
 		margin-left: 0;
 		margin-right: 0;
 	}
+
+    .trash-button {
+        cursor: pointer;
+        color: #ffffff;
+        transition: transform 0.2s ease-in-out;
+        font-size: 2.75vh;
+    }
+    .trash-button:hover {
+        font-size: 3vh;
+    }
 </style>
 
 <div class="background {fadeIn ? 'fade-in' : ''}">
 	<div class="background-wrapper {fadeIn ? 'fade-in' : ''}">
 		<div class="background-overlay"></div>
 		<div class="content {fadeIn ? 'fade-in' : ''} ml-[3vw] mr-[3vw] pl-[5vw] pr-[5vw]">
-			<h1
-				class="font-serif text-[6vh] mt-[4vh] backdrop-blur-lg bg-[#477159] bg-opacity-30 h-[7vh]"
-			>
-				{listId}
+			<h1 class="font-serif text-[6vh] mt-[4vh] backdrop-blur-lg bg-[#477159] bg-opacity-30 h-[7vh]">
+				{listId} items
 			</h1>
 
 			{#if products.length > 0}
@@ -226,6 +244,7 @@
 								<th>Quantity</th>
 								<th>Supplier</th>
 								<th>Frozen</th>
+								<th>Remove</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -248,6 +267,9 @@
                                     </td>
 									<td class="bg-[#26342c] rounded-lg border-[#000000] border-md">
                                         <span class="badge bg-[#0091eb]">{(product.Frozen == "Yes")? "Frozen" : "n/a"}</span>
+                                    </td>
+									<td class="bg-[#26342c] rounded-lg border-[#000000] border-md">
+                                        <i class="bi bi-trash3-fill trash-button" on:click={() => removeItem(product.Product)}></i>
                                     </td>
 								</tr>
 							{/each}
