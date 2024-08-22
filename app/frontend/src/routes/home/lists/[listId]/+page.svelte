@@ -206,44 +206,60 @@
 
 
 <div class="background {fadeIn ? 'fade-in' : ''}">
-  <div class="background-wrapper {fadeIn ? 'fade-in' : ''}">
-    <div class="background-overlay"></div>
-    <div class="content {fadeIn ? 'fade-in' : ''} ml-[3vw] mr-[3vw] pl-[5vw] pr-[5vw]">
+	<div class="background-wrapper {fadeIn ? 'fade-in' : ''}">
+		<div class="background-overlay"></div>
+		<div class="content {fadeIn ? 'fade-in' : ''} ml-[3vw] mr-[3vw] pl-[5vw] pr-[5vw]">
+			<h1
+				class="font-serif text-[6vh] mt-[4vh] backdrop-blur-lg bg-[#477159] bg-opacity-30 h-[7vh]"
+			>
+				{listId}
+			</h1>
 
-      <h1 class="font-serif text-[6vh] mt-[4vh] backdrop-blur-lg bg-[#477159] bg-opacity-30 h-[7vh]">{listId}</h1>
-
-      {#if products.length > 0}
-        <div class="table-container">
-          <table class="table-compact w-full mt-[1vh] no-spacing">
-            <thead>
-              <tr>
-                <th>Select</th>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Supplier</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each products as product}
-                <tr class="spacing-x">
-                  <td class="flex justify-center">
-                    <button 
-                      class={`toggle-button ${selectedItems.includes(product.Product) ? 'selected' : ''}`} 
-                      on:click={() => toggleSelection(product)}>
-                    </button>
-                  </td>
-                  <td class="font-semibold bg-[#26342c] rounded-lg pl-[2vw] border-[#000000] border-md">{product.Product}</td>
-                  <td class="bg-[#26342c] rounded-lg border-[#000000] border-md">{product.Quantity}</td>
-                  <td class="bg-[#26342c] rounded-lg border-[#000000] border-md"><span class="badge"
-                    style="background-color: {getBadgeColor(product.Supplier)}">{product.Supplier}</span></td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      {:else}
-        <p>No products available.</p>
-      {/if}
-    </div>
-  </div>
+			{#if products.length > 0}
+				<div class="table-container">
+					<table class="table-compact w-full mt-[1vh] no-spacing">
+						<thead>
+							<tr>
+								<th>Select</th>
+								<th>Product</th>
+								<th>Quantity</th>
+								<th>Supplier</th>
+								<th>Frozen</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each products as product}
+								<tr class="spacing-x">
+									<td class="flex justify-center">
+										<button
+											class={`toggle-button ${selectedItems.includes(product.Product) ? 'selected' : ''}`}
+											on:click={() => toggleSelection(product)}
+										>
+										</button>
+									</td>
+									<td
+										class="font-semibold bg-[#26342c] rounded-lg pl-[2vw] border-[#000000] border-md"
+										>{product.Product}</td
+									>
+									<td class="bg-[#26342c] rounded-lg border-[#000000] border-md"
+										>{product.Quantity}</td
+									>
+									<td class="bg-[#26342c] rounded-lg border-[#000000] border-md"
+										><span class="badge" style="background-color: {getBadgeColor(product.Supplier)}"
+											>{product.Supplier}</span
+										></td
+									>
+									<td class="bg-[#26342c] rounded-lg border-[#000000] border-md"
+										>{product.Frozen}</td
+									>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{:else}
+				<p>No products available.</p>
+			{/if}
+		</div>
+	</div>
 </div>
