@@ -21,6 +21,12 @@ const stockSchema = new Schema({
     Frozen: {
         type: String,
         required: false 
+    },
+
+    /* used to identify newly added items to delete / unique identifier*/
+    id: {
+        type: String,
+        required: false 
     }
 });
 
