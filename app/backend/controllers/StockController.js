@@ -95,6 +95,49 @@ const addItem = async (req, res) => {
     }
 }
 
+const updateDatabase = async (req, res) => {
+    try {
+        console.log("Updating database...");
+
+        const { toAdd, toRemove } = req.body;
+        const itemsToAdd = toAdd.flat();
+        const itemsToRemove = toRemove.flat();
+
+        // insert new items first
+        if (itemsToAdd.length > 0) {
+            await Stock.insertMany(itemsToAdd);
+        }
+
+        // separate IDs into normal strings and ObjectId
+        const idsToRemove = itemsToRemove.map(item => item._id || item.id);
+        
+        const objectIds = idsToRemove.filter(id => mongoose.Types.ObjectId.isValid(id));
+        const stringIds = idsToRemove.filter(id => !mongoose.Types.ObjectId.isValid(id));
+
+        console.log("Items to add", itemsToAdd);
+        console.log("Items to remove:", itemsToRemove);
+        console.log("IDs to remove:", idsToRemove);
+        console.log("ObjectIDs to remove:", objectIds);
+        console.log("String IDs to remove:", stringIds);
+
+        // delete by `id` for normal string IDs
+        if (stringIds.length > 0) {
+            await Stock.deleteMany({ id: { $in: stringIds } });
+        }
+
+        // delete by `_id` for ObjectId
+        if (objectIds.length > 0) {
+            await Stock.deleteMany({ _id: { $in: objectIds } });
+        }
+
+        res.status(201).json('Database updated.');
+    } catch (err) {
+        console.error("Error updating database:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+
 
 const removeItem = async (req, res) => {
     try {
@@ -116,4 +159,4 @@ const removeItem = async (req, res) => {
 
 
 // export functions within an object
-module.exports = { getAllStock, getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, removeItem } 
+module.exports = { getAllStock, getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, updateDatabase,removeItem } 

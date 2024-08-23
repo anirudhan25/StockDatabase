@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // controller functions
-const { getAllStock, getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, removeItem } = require('../controllers/StockController');
+const { getAllStock, getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, updateDatabase, removeItem } = require('../controllers/StockController');
 
 // define routes
 router.get('/from/all', getAllStock);
@@ -13,6 +13,7 @@ router.get('/like/:item', getSimilarStockByName);
 router.get('/:item/quantity', getQuantity);
 router.get('/:item/supplier', getSupplier);
 router.post('/add/:item', addItem);
+router.post('/update', updateDatabase);
 router.delete('/remove/:item', removeItem);
 
 module.exports = router;

@@ -9,6 +9,8 @@
     let products = [];
     let fadeIn = false;
     let selectedItems = [];
+    let addedItems = [];
+    let removedItems = [];
     const supplierColors = {
         Bidfood: '#d42000',
         Reynolds: '#FF5733',
@@ -32,8 +34,13 @@
 
     const removeItem = async (productName) => {
         try {
-            // await axios.delete(`${url}/remove/${productName}`);
+            removedItems.push(products.filter(product => product.Product === productName));
             products = products.filter(product => product.Product !== productName);
+
+
+            if (addedItems.some(new_item => new_item.Product === item.Product)) {
+                addedItems = addedItems.filter(new_item => new_item.Product !== item.Product);
+            }
         } catch (error) {
             console.error('Error removing item:', error);
         }
@@ -56,10 +63,18 @@
 
     const addProduct = () => {
         if (newProduct.Product && newProduct.Quantity && newProduct.Supplier) {
+            const item_id = `${newProduct.Product + newProduct.Quantity + newProduct.Supplier}`;
+            console.log(`new item id: ${item_id}`);
+
+            newProduct.id = item_id;
+            addedItems.push(newProduct);
             products = [newProduct, ...products];
             newProduct = { Product: '', Quantity: '', Supplier: '', Frozen: 'No' };
             showAddRow = false;
-            console.log(products);
+
+            if (removedItems.some(item => item.Product === newProduct.Product)) {
+                removedItems = removedItems.filter(item => item.Product !== newProduct.Product);
+            }
         }
     };
 
@@ -67,6 +82,30 @@
         newProduct = { Product: '', Quantity: '', Supplier: '', Frozen: 'No' };
         showAddRow = false;
     };
+
+    const updateDatabase = async () => {
+        try {
+            const data = {
+                toAdd: addedItems,
+                toRemove: removedItems
+            };
+
+            await axios.post(`${url}/update`, data)
+            .then((response) => {
+                console.log('Database updated:', response.data);
+            })
+            .catch(error => {
+                console.error('Error updating database:', error);
+            });
+            
+            // clear lists when done to avoid removing / adding
+            addedItems = [];
+            removedItems = [];
+        } catch (error) {
+            console.error('Unexpected error:', error);
+        }
+    };
+
 
     onMount(() => {
         setTimeout(() => {
@@ -401,10 +440,10 @@
 
             {#if !showAddRow}
                 <div class="flex-buttons">
-                    <div class="icon-container mt-[1.5vh] ml-[1.55vw] fade-in" on:click={() => showAddRow = true}>
+                    <div class="icon-container mt-[1.5vh] ml-[1.85vw] fade-in" on:click={() => showAddRow = true}>
                         <i class="bi bi-plus-circle-fill"></i>
                     </div>
-                    <button class="confirm-button mt-[1.5vh] ml-[65vw] w-[6vw]">Save</button>
+                    <button class="confirm-button mt-[1.5vh] ml-[65vw] w-[6vw]" on:click={() => updateDatabase()}>Save</button>
                     <button class="confirm-button mt-[1.5vh] w-[6vw]">Export</button>
                 </div>
             {/if}
