@@ -11,6 +11,8 @@
     let selectedItems = [];
     let addedItems = [];
     let removedItems = [];
+    let selectedCount = 0;
+
     const supplierColors = {
         Bidfood: '#d42000',
         Reynolds: '#FF5733',
@@ -51,8 +53,10 @@
         const index = selectedItems.indexOf(productId);
 
         if (index === -1) {
+            selectedCount++;
             selectedItems = [...selectedItems, productId];
         } else {
+            selectedCount--;
             selectedItems = selectedItems.filter((item) => item !== productId);
         }
     };
@@ -64,7 +68,6 @@
     const addProduct = () => {
         if (newProduct.Product && newProduct.Quantity && newProduct.Supplier) {
             const item_id = `${newProduct.Product + newProduct.Quantity + newProduct.Supplier}`;
-            console.log(`new item id: ${item_id}`);
 
             newProduct.id = item_id;
             addedItems.push(newProduct);
@@ -240,7 +243,7 @@
     }
 
     .card:hover {
-        transform: translateY(-1px); /* slight hover effect */
+        transform: translateY(-1px);
         scale: 1.01;
     }
 
@@ -274,16 +277,52 @@
         margin-right: 0;
     }
 
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        overflow-y: none;
+    }
+
+    .divider {
+        width: 0.5px;
+        height: 40px;
+        background-color: #496d5a;
+        margin-right: 1vw;
+        scale: 1.4;
+    }
+
     .trash-button {
         cursor: pointer;
         color: #ffffff;
-        transition: transform 0.2s ease-in-out;
-        font-size: 2.75vh;
+        transition: transform 0.15s ease-in-out;
+        font-size: 3vh;
+        margin-right: 1vw;
+        margin-left: 1.5vw;
     }
 
     .trash-button:hover {
-        font-size: 3vh;
+        transform: scale(1.25);
+        color: #de3933;
+        animation: shake 0.75s ease-in-out infinite;
     }
+
+    @keyframes shake {
+    0%, 100% {
+        transform: scale(1.25) rotate(0deg);
+    }
+    25% {
+        transform: scale(1.25) rotate(-5deg);
+    }
+    50% {
+        transform: scale(1.25) rotate(5deg);
+    }
+    75% {
+        transform: scale(1.25) rotate(-5deg);
+    }
+}
+
+
 
     .icon-container {
         display: flex;
@@ -307,7 +346,7 @@
 
     .table-container {
         overflow-y: auto;
-        max-height: 71.5vh; /* max height of the table container */
+        max-height: 75vh; /* max height of the table container */
         margin-top: 3vh;
     }
 
@@ -318,8 +357,8 @@
     }
 
     th, td {
-        padding: 15px; /* increased space inside each cell */
-        border: 1px solid rgb(73, 109, 90);
+        padding: 15px;
+        border: 1px solid #496d5a;
         background-color: #26342c;
         color: #d1dfda;
         text-align: center;
@@ -341,6 +380,16 @@
         border: none;
         font-size: 1em;
     }
+
+    .total-count {
+        width: 50px;
+        font-weight: bold;
+        color: #d1dfdadb;
+        background-color: transparent;
+        border: none;
+        font-size: 1.5em;
+    }
+
     tr:hover .item-count {
         color: #ffffff;
         scale: 1.15;
@@ -405,14 +454,19 @@
     <div class="background-wrapper {fadeIn ? 'fade-in' : ''}">
         <div class="background-overlay"></div>
         <div class="content {fadeIn ? 'fade-in' : ''} ml-[3vw] mr-[3vw] pl-[1.25vw] pr-[5vw]">
-            <div class="pl-[3.75vw]">
-                <h1 class="font-serif text-[6vh] mt-[4vh] backdrop-blur-lg bg-[#477159] bg-opacity-30 h-[7vh]">
-                    {listId} items
-                </h1>
+
+            <div class="total-count flex mt-[5vh] ml-[4vw]">
+                <span>{products.length}</span>
+                <span class="ml-[0.5vw] text-[0.8em]">total</span>
+                <span class="ml-[0.5vw] text-[0.8em] mr-[2vw]">items</span>
+
+                <span>{selectedCount}</span>
+                <span class="ml-[0.5vw] text-[0.8em]">selected</span>
+                <span class="ml-[0.5vw] text-[0.8em]">items</span>
             </div>
 
             <div class="table-container">
-                <table class="table-compact w-full mt-[1vh] no-spacing">
+                <table class="table-compact w-full mt-[0vh] no-spacing">
                     <thead>
                         <tr>
                             <th class="item-count"></th>
@@ -421,7 +475,6 @@
                             <th>Quantity</th>
                             <th>Supplier</th>
                             <th>Frozen</th>
-                            <th>Remove</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -457,9 +510,15 @@
                                         {/if}
                                     </button>
                                 </td>
-                                <td class="font-semibold bg-[#26342c] rounded-lg pl-[2vw] border-[#000000] border-md">
-                                    {product.Product}
+
+                                <td class="flex-row justify-start font-semibold bg-[#26342c] rounded-lg pl-[2vw] border-[#000000] border-md">
+                                    <div class="product-info">
+                                        <i class="bi bi-trash3-fill trash-button" on:click={() => removeItem(product.Product)}></i>
+                                        <div class="divider"></div>
+                                        <span>{product.Product}</span>
+                                    </div>
                                 </td>
+
                                 <td class="bg-[#26342c] rounded-lg border-[#000000] border-md">
                                     {product.Quantity}
                                 </td>
@@ -469,9 +528,6 @@
                                 <td class="bg-[#26342c] rounded-lg border-[#000000] border-md">
                                     <span class="badge bg-[#0091eb]">{(product.Frozen == "Yes") ? "Frozen" : "n/a"}</span>
                                 </td>
-                                <td class="bg-[#26342c] rounded-lg border-[#000000] border-md">
-                                    <i class="bi bi-trash3-fill trash-button" on:click={() => removeItem(product.Product)}></i>
-                                </td>
                             </tr>
                         {/each}
                     </tbody>
@@ -480,7 +536,7 @@
 
             {#if !showAddRow}
                 <div class="flex-buttons">
-                    <div class="icon-container mt-[1vh] ml-[4.6vw] fade-in" on:click={() => showAddRow = true}>
+                    <div class="icon-container mt-[0.7vh] ml-[4.6vw] fade-in" on:click={() => showAddRow = true}>
                         <i class="bi bi-plus-circle-fill"></i>
                     </div>
                     <button class="confirm-button mt-[1vh] ml-[57.5vw] w-[9vw]" on:click={confirmSave}>Save</button>
