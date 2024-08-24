@@ -54,17 +54,28 @@
     };
 
     const toggleSelection = (product) => {
-        const productId = product.Product;
-        const index = selectedItems.indexOf(productId);
+        const productName = product.Product;
+        const index = selectedItems.indexOf(productName);
 
         if (index === -1) {
             selectedCount++;
-            selectedItems = [...selectedItems, productId];
+            selectedItems = [...selectedItems, productName];
         } else {
             selectedCount--;
-            selectedItems = selectedItems.filter((item) => item !== productId);
+            selectedItems = selectedItems.filter((item) => item !== productName);
         }
     };
+
+    const toggleSelectAll = () => {
+        if (selectedCount > 0) {
+            selectedCount = 0;
+            selectedItems = [];
+        } else {
+            selectedCount = products.length;
+            selectedItems = products.map(product => product.Product);
+        }
+    };
+
 
     const getBadgeColor = (supplier) => {
         return supplierColors[supplier];
@@ -287,7 +298,7 @@
     onMount(() => {
         setTimeout(() => {
             fadeIn = true;
-        }, 100);
+        }, 50);
 
         getFromSupplier();
     });
@@ -610,7 +621,7 @@
                     <thead>
                         <tr>
                             <th class="item-count"></th>
-                            <th>Select</th>
+                            <th on:click={toggleSelectAll} class="hover:cursor-pointer">Select</th>
                             <th>Product</th>
                             <th>Quantity</th>
                             <th>Supplier</th>
@@ -675,7 +686,7 @@
 
             {#if !showAddRow}
                 <div class="flex-buttons">
-                    <div class="add-container mt-[0.5vh] ml-[4.6vw] fade-in" on:click={() => showAddRow = true}>
+                    <div class="add-container mt-[0.5vh] ml-[4.8vw] fade-in hover:cursor-pointer" on:click={() => showAddRow = true}>
                         <i class="bi bi-file-plus rotate-90 text-[#d1dfda] scale-[1.25]"></i>
                     </div>
 
