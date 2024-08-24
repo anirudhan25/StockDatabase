@@ -308,23 +308,22 @@
     }
 
     @keyframes shake {
-    0%, 100% {
-        transform: scale(1.25) rotate(0deg);
+        0%, 100% {
+            transform: scale(1.25) rotate(0deg);
+        }
+        25% {
+            transform: scale(1.25) rotate(-5deg);
+        }
+        50% {
+            transform: scale(1.25) rotate(5deg);
+        }
+        75% {
+            transform: scale(1.25) rotate(-5deg);
+        }
     }
-    25% {
-        transform: scale(1.25) rotate(-5deg);
-    }
-    50% {
-        transform: scale(1.25) rotate(5deg);
-    }
-    75% {
-        transform: scale(1.25) rotate(-5deg);
-    }
-}
 
 
-
-    .icon-container {
+    .add-container {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -333,22 +332,24 @@
         height: 80px;
     }
 
-    .icon-container i {
-        color: #d1dfda; 
-        font-size: 3em;
+    .add-container i {
+        color: #496d5a; 
+        font-size: 3.5em;
         transition: transform 0.3s ease;
     }
 
-    .icon-container:hover i {
-        color: #ffffff;
-        transform: scale(1.1); 
+   .add-container:hover i {
+        color: #72a58a;
+        transform: scale(1.4) rotate(90deg);
     }
+
 
     .table-container {
         overflow-y: auto;
         max-height: 75vh; /* max height of the table container */
         margin-top: 3vh;
     }
+
 
     table {
         border-collapse: separate;
@@ -397,6 +398,7 @@
 
     td input, td select {
         width: 100%;
+        height: 40%;
         padding: 10px;
         border: 1px solid #26342c;
         background-color: #26342c;
@@ -420,7 +422,7 @@
     }
 
     .confirm-button:hover {
-        background-color: #1bb031;
+        background-color: #21c239;
     }
 
     .cancel-button {
@@ -480,8 +482,11 @@
                     <tbody>
                         {#if showAddRow}
                             <tr>
-                                <td></td>
-                                <td></td>
+                                <td class="item-count"></td>
+                                <td>
+                                    <button on:click={addProduct} class="confirm-button">Add</button>
+                                    <button class="cancel-button" on:click={cancelAddProduct}>Cancel</button>
+                                </td>
                                 <td><input type="text" bind:value={newProduct.Product} placeholder="Product" /></td>
                                 <td><input type="text" bind:value={newProduct.Quantity} placeholder="Quantity" /></td>
                                 <td><input type="text" bind:value={newProduct.Supplier} placeholder="Supplier" /></td>
@@ -490,10 +495,6 @@
                                         <option value="Yes">Yes</option>
                                         <option value="No">No</option>
                                     </select>
-                                </td>
-                                <td>
-                                    <button on:click={addProduct} class="confirm-button">Add</button>
-                                    <button class="cancel-button" on:click={cancelAddProduct}>Cancel</button>
                                 </td>
                             </tr>
                         {/if}
@@ -536,11 +537,11 @@
 
             {#if !showAddRow}
                 <div class="flex-buttons">
-                    <div class="icon-container mt-[0.7vh] ml-[4.6vw] fade-in" on:click={() => showAddRow = true}>
-                        <i class="bi bi-plus-circle-fill"></i>
+                    <div class="add-container mt-[0.5vh] ml-[4.6vw] fade-in" on:click={() => showAddRow = true}>
+                        <i class="bi bi-file-plus rotate-90 text-[#d1dfda] scale-[1.25]"></i>
                     </div>
-                    <button class="confirm-button mt-[1vh] ml-[57.5vw] w-[9vw]" on:click={confirmSave}>Save</button>
-                    <button class="confirm-button mt-[1vh] w-[9vw]" on:click={confirmExport}>Export</button>
+                    <button class="confirm-button mt-[0.5vh] ml-[57.5vw] w-[9vw] font-serif font-semibold" on:click={confirmSave}>Save</button>
+                    <button class="confirm-button mt-[0.5vh] w-[9vw] font-serif font-semibold" on:click={confirmExport}>Export</button>
                 </div>
             {/if}
         </div>
