@@ -174,9 +174,9 @@ const exportExcel = async (req, res) => {
 
         // add columns and rows
         worksheet.columns = [
-            { header: 'Product Name', key: 'Product', width: 42 },
+            { header: 'Product Name', key: 'Product', width: 40 },
             { header: 'Quantity', key: 'Quantity', width: 16 },
-            { header: 'Supplier', key: 'Supplier', width: 12 },
+            { header: 'Supplier', key: 'Supplier', width: 16 },
             { header: 'Frozen', key: 'Frozen', width: 6 }
         ];
 
