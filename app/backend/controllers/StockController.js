@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const { MongoClient } = require('mongodb');
+const ExcelJS = require('exceljs');
 const Stock = require('../models/StockModel');
 
 const getAllStock = async (req, res) => {
@@ -156,7 +158,50 @@ const removeItem = async (req, res) => {
     }
 };
 
+const exportExcel = async (req, res) => {
+    const uri = process.env.MONGODB_URI;
+    const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
+    try {
+        await client.connect();
+        const database = client.db('StockDB');
+        const collection = database.collection('Stock');
+
+        const data = await collection.find({}).toArray();
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('output');
+
+        // add columns and rows
+        worksheet.columns = [
+            { header: 'Product Name', key: 'Product', width: 42 },
+            { header: 'Quantity', key: 'Quantity', width: 16 },
+            { header: 'Supplier', key: 'Supplier', width: 12 },
+            { header: 'Frozen', key: 'Frozen', width: 6 }
+        ];
+
+        data.sort((a, b) => {
+            if (a.Product < b.Product) return -1;
+            if (a.Product > b.Product) return 1;
+            return 0;
+        });
+
+        data.forEach(item => {
+            worksheet.addRow(item);
+        });
+        
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        // set response headers to indicate a file attachment
+        res.setHeader('Content-Disposition', 'attachment; filename="output.xlsx"');
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        res.send(buffer);
+    } catch (error) {
+        console.error('Error exporting to Excel:', error);
+        res.status(500).send('Failed to export data');
+    }
+}
 
 // export functions within an object
-module.exports = { getAllStock, getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, updateDatabase,removeItem } 
+module.exports = { getAllStock, getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, updateDatabase, removeItem, exportExcel } 
