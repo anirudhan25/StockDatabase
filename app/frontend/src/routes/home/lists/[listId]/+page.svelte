@@ -213,9 +213,9 @@
         cursor: pointer;
         width: 40px;
         height: 40px;
-        border: 3px solid #d1dfda;
+        border: 3px solid #d1dfdac5;
         border-radius: 50%;
-        background-color: #ffffff;
+        background-color: #ffffffc6;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -224,7 +224,7 @@
     }
 
     .toggle-button.selected {
-        background-color: #23ab37;
+        background-color: #ffffff;
         color: #fff;
     }
 
@@ -332,27 +332,18 @@
         font-size: 1.2em;
     }
 
-    .selected {
-        background-color: #d1dfda;
+    .item-count {
+        width: 50px;
+        text-align: center;
+        font-weight: bold;
+        color: #d1dfdadb;
+        background-color: transparent;
+        border: none;
+        font-size: 1em;
     }
-
-    .toggle-button {
-        cursor: pointer;
-        width: 40px;
-        height: 40px;
-        border: 3px solid #d1dfda;
-        border-radius: 50%;
-        background-color: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.15s;
-        font-size: 1.2em;
-    }
-
-    .toggle-button.selected {
-        background-color: #23ab37;
-        color: #fff;
+    tr:hover .item-count {
+        color: #ffffff;
+        scale: 1.15;
     }
 
     td input, td select {
@@ -369,7 +360,6 @@
         outline-offset: 2px;
     }
 
-
     .confirm-button {
         padding: 10px 15px;
         background-color: #21a134;
@@ -384,7 +374,7 @@
         background-color: #1bb031;
     }
 
-     .cancel-button {
+    .cancel-button {
         padding: 10px 15px;
         background-color: #d9534f;
         color: #d1dfda;
@@ -403,20 +393,29 @@
         align-items: center;
         gap: 10px;
     }
+
+    .tick-icon {
+        color: #176a3b;
+        font-size: 1.5em;
+        transition: opacity 0.3s;
+    }
 </style>
 
 <div class="background {fadeIn ? 'fade-in' : ''}">
     <div class="background-wrapper {fadeIn ? 'fade-in' : ''}">
         <div class="background-overlay"></div>
-        <div class="content {fadeIn ? 'fade-in' : ''} ml-[3vw] mr-[3vw] pl-[5vw] pr-[5vw]">
-            <h1 class="font-serif text-[6vh] mt-[4vh] backdrop-blur-lg bg-[#477159] bg-opacity-30 h-[7vh]">
-                {listId} items
-            </h1>
+        <div class="content {fadeIn ? 'fade-in' : ''} ml-[3vw] mr-[3vw] pl-[1.25vw] pr-[5vw]">
+            <div class="pl-[3.75vw]">
+                <h1 class="font-serif text-[6vh] mt-[4vh] backdrop-blur-lg bg-[#477159] bg-opacity-30 h-[7vh]">
+                    {listId} items
+                </h1>
+            </div>
 
             <div class="table-container">
                 <table class="table-compact w-full mt-[1vh] no-spacing">
                     <thead>
                         <tr>
+                            <th class="item-count"></th>
                             <th>Select</th>
                             <th>Product</th>
                             <th>Quantity</th>
@@ -428,6 +427,7 @@
                     <tbody>
                         {#if showAddRow}
                             <tr>
+                                <td></td>
                                 <td></td>
                                 <td><input type="text" bind:value={newProduct.Product} placeholder="Product" /></td>
                                 <td><input type="text" bind:value={newProduct.Quantity} placeholder="Quantity" /></td>
@@ -445,12 +445,16 @@
                             </tr>
                         {/if}
 
-                        {#each products as product}
+                        {#each products as product, index}
                             <tr class="spacing-x">
+                                <td class="item-count">{index + 1}</td>
                                 <td class="flex justify-center">
                                     <button
                                         class={`toggle-button ${selectedItems.includes(product.Product) ? 'selected' : ''}`}
                                         on:click={() => toggleSelection(product)}>
+                                        {#if selectedItems.includes(product.Product)}
+                                            <i class="bi bi-check-lg tick-icon"></i>
+                                        {/if}
                                     </button>
                                 </td>
                                 <td class="font-semibold bg-[#26342c] rounded-lg pl-[2vw] border-[#000000] border-md">
@@ -476,11 +480,11 @@
 
             {#if !showAddRow}
                 <div class="flex-buttons">
-                    <div class="icon-container mt-[1.5vh] ml-[1.85vw] fade-in" on:click={() => showAddRow = true}>
+                    <div class="icon-container mt-[1vh] ml-[4.6vw] fade-in" on:click={() => showAddRow = true}>
                         <i class="bi bi-plus-circle-fill"></i>
                     </div>
-                    <button class="confirm-button mt-[1.5vh] ml-[65vw] w-[6vw]" on:click={confirmSave}>Save</button>
-                    <button class="confirm-button mt-[1.5vh] w-[6vw]" on:click={confirmExport}>Export</button>
+                    <button class="confirm-button mt-[1vh] ml-[57.5vw] w-[9vw]" on:click={confirmSave}>Save</button>
+                    <button class="confirm-button mt-[1vh] w-[9vw]" on:click={confirmExport}>Export</button>
                 </div>
             {/if}
         </div>
