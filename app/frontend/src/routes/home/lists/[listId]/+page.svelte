@@ -141,22 +141,23 @@
 
 
     const confirmExport = async () => {
-        if (addedItems.length > 0 || removedItems.length > 0) {
-            const modal = {
-                type: 'confirm',
-                title: 'Save changes before exporting',
-                body: 'You have unsaved changes. Save before exporting?',
-                response: async (r) => {
-                    if (r) {
-                        console.log('saving...');
-                        await updateDatabase();
-                    }
-                }
-            };
-            modalStore.trigger(modal);
-        }
-
         if(choice === 'Export All'){
+
+            if (addedItems.length > 0 || removedItems.length > 0) {
+                const modal = {
+                    type: 'confirm',
+                    title: 'Save changes before exporting',
+                    body: 'You have unsaved changes. Save before exporting?',
+                    response: async (r) => {
+                        if (r) {
+                            console.log('saving...');
+                            await updateDatabase();
+                        }
+                    }
+                };
+                modalStore.trigger(modal);
+            }
+
             if(fileType === 'Export Excel'){
                 try {
                     const response = await axios.post(`http://localhost:8000/api/stock/export/excel`, null, {
@@ -181,18 +182,18 @@
 
             if(fileType === 'Export PDF'){
                 try {
-                    const response = await axios.post(`http://localhost:8000/api/stock/export/excel`, null, {
+                    const response = await axios.post(`http://localhost:8000/api/stock/export/pdf`, null, {
                         responseType: 'blob', // to handle binary data
                     });
 
                     const blob = new Blob([response.data], {
-                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        type: 'application/pdf',
                     });
 
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.setAttribute('download', 'output.xlsx');
+                    link.setAttribute('download', 'output.pdf');
                     document.body.appendChild(link);
                     link.click();
                     link.remove();
@@ -205,10 +206,17 @@
         if(choice === 'Export View'){
             if(fileType === 'Export Excel'){
                 try {
-                    const response = await axios.post(`http://localhost:8000/api/stock/export/excel`, null, {
-                        responseType: 'blob', // to handle binary data
-                    });
+                    const requestBody = {
+                        items: products.map(item => item.Product)
+                    };
 
+                    const response = await axios.post(
+                        'http://localhost:8000/api/stock/export/excel',
+                        requestBody,
+                        {
+                            responseType: 'blob', // to handle binary data
+                        }
+                    );
                     const blob = new Blob([response.data], {
                         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     });
@@ -227,18 +235,26 @@
 
             if(fileType === 'Export PDF'){
                 try {
-                    const response = await axios.post(`http://localhost:8000/api/stock/export/excel`, null, {
-                        responseType: 'blob', // to handle binary data
-                    });
+                    const requestBody = {
+                        items: products.map(item => item.Product)
+                    };
+
+                    const response = await axios.post(
+                        'http://localhost:8000/api/stock/export/pdf',
+                        requestBody,
+                        {
+                            responseType: 'blob', // to handle binary data
+                        }
+                    );
 
                     const blob = new Blob([response.data], {
-                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        type: 'application/pdf',
                     });
 
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.setAttribute('download', 'output.xlsx');
+                    link.setAttribute('download', 'output.pdf');
                     document.body.appendChild(link);
                     link.click();
                     link.remove();
@@ -251,9 +267,17 @@
         if(choice === 'Export Selected'){
             if(fileType === 'Export Excel'){
                 try {
-                    const response = await axios.post(`http://localhost:8000/api/stock/export/excel`, null, {
-                        responseType: 'blob', // to handle binary data
-                    });
+                    const requestBody = {
+                        items: selectedItems
+                    };
+
+                    const response = await axios.post(
+                        'http://localhost:8000/api/stock/export/excel',
+                        requestBody,
+                        {
+                            responseType: 'blob', // to handle binary data
+                        }
+                    );
 
                     const blob = new Blob([response.data], {
                         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -273,18 +297,26 @@
 
             if(fileType === 'Export PDF'){
                 try {
-                    const response = await axios.post(`http://localhost:8000/api/stock/export/excel`, null, {
-                        responseType: 'blob', // to handle binary data
-                    });
+                    const requestBody = {
+                        items: selectedItems
+                    };
+
+                    const response = await axios.post(
+                        'http://localhost:8000/api/stock/export/pdf',
+                        requestBody,
+                        {
+                            responseType: 'blob', // to handle binary data
+                        }
+                    );
 
                     const blob = new Blob([response.data], {
-                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        type: 'application/pdf',
                     });
 
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.setAttribute('download', 'output.xlsx');
+                    link.setAttribute('download', 'output.pdf');
                     document.body.appendChild(link);
                     link.click();
                     link.remove();
@@ -484,7 +516,7 @@
     .add-container i {
         color: #496d5a; 
         font-size: 3.5em;
-        transition: transform 0.3s ease;
+        transition: transform 0.1s ease;
     }
 
    .add-container:hover i {
@@ -676,7 +708,7 @@
                                     <span class="badge" style="background-color: {getBadgeColor(product.Supplier)}">{product.Supplier}</span>
                                 </td>
                                 <td class="bg-[#26342c] rounded-lg border-[#000000] border-md">
-                                    <span class="badge bg-[#0091eb]">{(product.Frozen == "Yes") ? "Frozen" : "n/a"}</span>
+                                    <span class="badge bg-[#0091eb]">{(product.Frozen == "Yes") ? "Frozen" : "Ambient"}</span>
                                 </td>
                             </tr>
                         {/each}
@@ -694,7 +726,7 @@
                         {#each ['Export All', 'Export View', 'Export Selected'] as e}
                             <button
                                 class="chip {choice === e ? 'variant-filled' : 'variant-soft'} ml-[0.5vw]"
-                                on:click={() => { choice = e }}
+                                on:click={() => { choice = e; console.log(e) }}
                                 on:keypress
                             >
                                 {#if choice === e}(<span><i class="bi bi-check-lg tick-icon"></i></span>){/if}
@@ -707,7 +739,7 @@
                         {#each ['Export Excel', 'Export PDF'] as f}
                             <button
                                 class="chip {fileType === f ? 'variant-filled' : 'variant-soft'} ml-[0.5vw]"
-                                on:click={() => { fileType = f }}
+                                on:click={() => { fileType = f; console.log(f)}}
                                 on:keypress
                             >
                                 {#if fileType === f}(<span><i class="bi bi-check-lg tick-icon"></i></span>){/if}

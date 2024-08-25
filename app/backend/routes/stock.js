@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // controller functions
-const { getAllStock, getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, updateDatabase, removeItem, exportExcel } = require('../controllers/StockController');
+const { getAllStock, getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, updateDatabase, removeItem, exportExcel, exportPDF } = require('../controllers/StockController');
 
 // define routes
 router.get('/from/all', getAllStock);
@@ -16,5 +16,6 @@ router.post('/add/:item', addItem);
 router.post('/update', updateDatabase);
 router.delete('/remove/:item', removeItem);
 router.post('/export/excel', exportExcel);
+router.post('/export/pdf', exportPDF);
 
 module.exports = router;
