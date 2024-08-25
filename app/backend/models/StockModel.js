@@ -27,6 +27,11 @@ const stockSchema = new Schema({
     id: {
         type: String,
         required: false 
+    },
+
+    selected: {
+        type: Boolean,
+        required: false 
     }
 });
 
