@@ -345,6 +345,10 @@
         }
     };
 
+    const reverseProducts = () => {
+        products = [...products].reverse();
+    }
+
     onMount(async () => {
         setTimeout(() => {
             fadeIn = true;
@@ -658,7 +662,7 @@
         <div class="background-overlay"></div>
         <div class="content {fadeIn ? 'fade-in' : ''} ml-[3vw] mr-[3vw] pl-[1.25vw] pr-[5vw]">
 
-            <div class="total-count flex mt-[5vh] ml-[4vw]">
+            <div class="total-count flex mt-[3vh] ml-[4vw]">
                 <span>{products.length}</span>
                 <span class="ml-[0.5vw] text-[0.8em]">total</span>
                 <span class="ml-[0.5vw] text-[0.8em] mr-[2vw]">items</span>
@@ -666,6 +670,8 @@
                 <span>{selectedCount}</span>
                 <span class="ml-[0.5vw] text-[0.8em]">selected</span>
                 <span class="ml-[0.5vw] text-[0.8em]">items</span>
+
+                <i on:click={reverseProducts} class="bi bi-sort-alpha-down ml-[3vw] bg-[#26342c] backdrop-blur-md rounded-md" style="font-size: 40px; transform: translateY(-20%); border: 1px solid #496d5a;"></i>
             </div>
 
             <div class="table-container">
