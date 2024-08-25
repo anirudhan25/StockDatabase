@@ -34,6 +34,12 @@
             const response = await axios.get(`${url}/from/${listId}`);
             const fetchedProducts = response.data;
             products = fetchedProducts.sort((a, b) => a.Product.localeCompare(b.Product));
+            products.forEach(item => {
+                if(item.selected){
+                    console.log(`selected from db: ${item.Product}`);
+                    selectedItems.push(item.Product);
+                }
+            });
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -60,20 +66,28 @@
         if (index === -1) {
             selectedCount++;
             selectedItems = [...selectedItems, productName];
-        } else {
+            products.find(p => p.Product === productName).selected = true;
+            console.log(`selected ${product}`);
+        } else if (index !== -1 || product.selected) {
             selectedCount--;
-            selectedItems = selectedItems.filter((item) => item !== productName);
+            products.find(p => p.Product === productName).selected = false;
+            selectedItems = selectedItems.filter(item => item !== productName);
+            console.log(`deselected ${product}`);
         }
     };
+
 
     const toggleSelectAll = () => {
         if (selectedCount > 0) {
             selectedCount = 0;
             selectedItems = [];
+            products.forEach(item => item.selected = false);
         } else {
             selectedCount = products.length;
             selectedItems = products.map(product => product.Product);
+            products.forEach(item => item.selected = true);
         }
+        console.log(`selected items: ${selectedItems.length}/${products.filter(item => item.selected = true)}`);
     };
 
 
@@ -104,9 +118,12 @@
 
     const updateDatabase = async () => {
         try {
+            console.log(`selected changes: ${products.filter(item => selectedItems.includes(item.Product))}`);
             const data = {
                 toAdd: addedItems,
-                toRemove: removedItems
+                toRemove: removedItems,
+                selectedChanges: selectedItems
+
             };
 
             await axios.post(`${url}/update`, data)
@@ -119,6 +136,7 @@
             
             addedItems = [];
             removedItems = [];
+            // selectedItems = [];
         } catch (error) {
             console.error('Unexpected error:', error);
         }
@@ -327,12 +345,14 @@
         }
     };
 
-    onMount(() => {
+    onMount(async () => {
         setTimeout(() => {
             fadeIn = true;
         }, 50);
 
-        getFromSupplier();
+        await getFromSupplier();
+        selectedCount = selectedItems.length;
+        console.log(`selected items: ${selectedItems}`);
     });
 </script>
 
@@ -685,7 +705,7 @@
                                 <td class="item-count">{index + 1}</td>
                                 <td class="flex justify-center">
                                     <button
-                                        class={`toggle-button ${selectedItems.includes(product.Product) ? 'selected' : ''}`}
+                                        class={`toggle-button ${selectedItems.includes(product.Product)  || product.selected ? 'selected' : ''}`}
                                         on:click={() => toggleSelection(product)}>
                                         {#if selectedItems.includes(product.Product)}
                                             <i class="bi bi-check-lg tick-icon"></i>

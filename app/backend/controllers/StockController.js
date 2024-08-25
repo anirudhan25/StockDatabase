@@ -99,10 +99,15 @@ const addItem = async (req, res) => {
 }
 
 const updateDatabase = async (req, res) => {
+    const uri = process.env.MONGODB_URI;
+    const client = new MongoClient(uri);
     try {
+        await client.connect();
+        const database = client.db('StockDB');
+        const collection = database.collection('Stock');
         console.log("Updating database...");
 
-        const { toAdd, toRemove } = req.body;
+        const { toAdd, toRemove, selectedChanges} = req.body;
         const itemsToAdd = toAdd.flat();
         const itemsToRemove = toRemove.flat();
 
@@ -110,6 +115,17 @@ const updateDatabase = async (req, res) => {
         if (itemsToAdd.length > 0) {
             await Stock.insertMany(itemsToAdd);
         }
+
+        await collection.updateMany(
+            {},
+            { $set: { selected: false } }
+        );
+
+        const result = await collection.updateMany(
+            { Product: { $in: selectedChanges } },
+            { $set: { selected: true } }
+        );
+        console.log(result);
 
         // separate IDs into normal strings and ObjectId
         const idsToRemove = itemsToRemove.map(item => item._id || item.id);
@@ -224,7 +240,7 @@ const exportPDF = async (req, res) => {
             // filter collection based on item names provided in the request body
             data = await collection.find({ Product: { $in: itemNames } }).toArray();
         } else {
-            // If no filter is provided, retrieve all items
+            // if no filter is provided, retrieve all items
             data = await collection.find({}).toArray();
         }
 
