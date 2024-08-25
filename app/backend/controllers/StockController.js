@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { MongoClient } = require('mongodb');
 const ExcelJS = require('exceljs');
+const PDFDocument = require('pdfkit');
 const Stock = require('../models/StockModel');
 
 const getAllStock = async (req, res) => {
@@ -159,11 +160,13 @@ const removeItem = async (req, res) => {
 };
 
 const exportExcel = async (req, res) => {
+    console.log('exporting to excel.');
     const uri = process.env.MONGODB_URI;
-    const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+    const client = new MongoClient(uri);
 
     try {
         await client.connect();
+        console.log('database connected');
         const database = client.db('StockDB');
         const collection = database.collection('Stock');
 
@@ -203,5 +206,116 @@ const exportExcel = async (req, res) => {
     }
 }
 
+const exportPDF = async (req, res) => {
+    console.log('\nexporting to pdf.');
+    const uri = process.env.MONGODB_URI;
+    const client = new MongoClient(uri);
+
+    try {
+        await client.connect();
+        const database = client.db('StockDB');
+        const collection = database.collection('Stock');
+        let data;
+
+        if (Object.keys(req.body).length > 0) {
+            // field like { items: ["item1", "item2", "item3"] }
+            const itemNames = req.body.items;
+            
+            // filter collection based on item names provided in the request body
+            data = await collection.find({ Product: { $in: itemNames } }).toArray();
+        } else {
+            // If no filter is provided, retrieve all items
+            data = await collection.find({}).toArray();
+        }
+
+        data.sort((a, b) => {
+            if (a.Product < b.Product) return -1;
+            if (a.Product > b.Product) return 1;
+            return 0;
+        });
+
+        const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+        res.setHeader('Content-Disposition', 'attachment; filename="output.pdf"');
+        res.setHeader('Content-Type', 'application/pdf');
+
+        const buffers = [];
+        doc.on('data', buffers.push.bind(buffers));
+        doc.on('end', () => {
+            const pdfData = Buffer.concat(buffers);
+            res.send(pdfData);
+        });
+
+        doc.fontSize(20).text('Database Stock', { align: 'center' });
+        doc.moveDown();
+
+        const headers = ['Product Name,  ', 'Quantity,  ', 'Supplier'];
+        const columnWidths = [400, 200, 250];
+
+        // print headers
+        headers.forEach((header, i) => {
+            doc.fontSize(12).text(header, { width: columnWidths[i], continued: i < headers.length - 1 });
+        });
+
+        doc.moveDown();
+        doc.strokeColor('#aaaaaa').lineWidth(1).moveTo(50, doc.y).lineTo(150, doc.y).stroke();
+        doc.moveDown();
+
+        const middleX = doc.page.width / 2;
+        let currentX = 50;
+        let currentY = doc.y;
+        let startY = doc.y;
+
+        data.forEach((item, index) => {
+            // Start a new page if we reach the bottom of the current page
+            if (currentY + 20 > doc.page.height - doc.page.margins.bottom) {
+                doc.addPage();
+                currentX = 50;
+                currentY = doc.y;
+                startY = doc.y;
+
+                headers.forEach((header, i) => {
+                    doc.fontSize(12).text(header, { width: columnWidths[i], continued: i < headers.length - 1 });
+                });
+                doc.moveDown();
+                doc.strokeColor('#aaaaaa').lineWidth(1).moveTo(50, doc.y).lineTo(150, doc.y).stroke();
+                doc.moveDown();
+
+                currentY = doc.y;
+            }
+
+            doc.fontSize(12);
+
+            // product name
+            doc.font('Helvetica-Bold').text(item.Product, currentX, currentY, {
+                width: columnWidths[0],
+                continued: true
+            });
+
+            // quantity
+            doc.font('Helvetica').text(' ' + item.Quantity, {
+                width: columnWidths[1],
+                continued: true
+            });
+
+            // supplier
+            doc.text(' ' + item.Supplier, {
+                width: columnWidths[2]
+            });
+
+            currentY += 20;
+        });
+
+        doc.end();
+    } catch (error) {
+        console.error('Error exporting to PDF:', error);
+        res.status(500).send('Failed to export data');
+    } finally {
+        await client.close();
+    }
+};
+
+
+
 // export functions within an object
-module.exports = { getAllStock, getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, updateDatabase, removeItem, exportExcel } 
+module.exports = { getAllStock, getStockBySupplier, getStockByName, getStockByQuantity, getSimilarStockByName, getQuantity, getSupplier, addItem, updateDatabase, removeItem, exportExcel, exportPDF } 
