@@ -818,15 +818,30 @@
         transition: opacity 0.3s;
     }
 
+    .flex-buttons-mobile {
+        display: none;
+    }
+
+    .select-all {
+        display: none;
+    }
 
     @media (max-width: 1000px) {
         .name {
             font-size: 0.8rem;
         }
 
+        .headers {
+            font-size: 0.8rem;
+        }
+
+        .select-all {
+            display: block;
+        }
+
         .table-container {
             width: 97vw;
-            transform: translateX(-5.4vw);
+            transform: translateX(-5.4vw) translateY(-3vh);
         }
 
         .info {
@@ -878,8 +893,30 @@
             scale: 1.2;
         }
 
+        .flex-buttons {
+            display: none;
+        }
+
         .export {
-            display: hidden;
+            display: none;
+        }
+
+        .flex-buttons-mobile {
+            display:flex;
+            transform: scale(0.75) translateX(-15%) translateY(-20%);
+        }
+
+        .add-form {
+            font-size: 0.75em;
+        }
+
+        .confirm-button {
+            transform: scale(0.85);
+            width: 4.75rem;
+        }
+
+        .cancel-button {
+            transform: scale(0.9);
         }
     }
 </style>
@@ -919,12 +956,26 @@
                         {/each}
                     </div>
                 </div>
+                <div class="flex-buttons-mobile">
+                    <div class="add-container ml-[4vw] fade-in hover:cursor-pointer" on:click={() => showAddRow = true}>
+                        <i class="bi bi-file-plus rotate-90 text-[#d1dfda] scale-[1.25]"></i>
+                    </div>
+
+                    <div class="ml-[2vw]">
+                        <button
+                            class="confirm-button mt-[1.2rem] w-[9vw] font-semibold {saveStatus === 'success' ? 'success' : ''} {saveStatus === 'error' ? 'error' : ''}"
+                            on:click={confirmSave}>
+                            Save
+                        </button>
+                        <button class="confirm-button mt-[0.5vh] w-[9vw] font-semibold" on:click={confirmExport}>Export</button>
+                    </div>
+                </div>
             </div>
 
             <div class="table-container">
                 <table class="table-traslate table-compact w-full no-spacing mt-[1vh]">
                     <thead>
-                        <tr class="name">
+                        <tr class="headers">
                             <th class="item-count"></th>
                             <th on:click={toggleSelectAll} class="hover:cursor-pointer">Select</th>
                             <th>Product</th>
@@ -941,9 +992,9 @@
                                     <button on:click={addProduct} class="confirm-button">Add</button>
                                     <button class="cancel-button" on:click={cancelAddProduct}>Cancel</button>
                                 </td>
-                                <td><input type="text" bind:value={newProduct.Product} placeholder="Product" /></td>
-                                <td><input type="text" bind:value={newProduct.Quantity} placeholder="Quantity" /></td>
-                                <td><input type="text" bind:value={newProduct.Supplier} placeholder="Supplier" /></td>
+                                <td><input class="add-form" type="text" bind:value={newProduct.Product} placeholder="Product" /></td>
+                                <td><input class="add-form" type="text" bind:value={newProduct.Quantity} placeholder="Quantity" /></td>
+                                <td><input class="add-form" type="text" bind:value={newProduct.Supplier} placeholder="Supplier" /></td>
                                 <td>
                                     <select bind:value={newProduct.Frozen}>
                                         <option value="Yes">Yes</option>
