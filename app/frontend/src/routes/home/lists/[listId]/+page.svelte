@@ -9,18 +9,30 @@
     const url = 'http://localhost:8000/api/stock';
 
     let products = [];
+    let filtered = [];
     let fadeIn = false;
     let selectedItems = [];
+    let selectedItemIds = [];
     let addedItems = [];
     let removedItems = [];
     let selectedCount = 0;
 
+    let frozenFilterCount = 0;
+    let frozenFilter = 'Frozen';
+    const suppliers = ["Bidfood", "Reynolds", "Birtwistles", "DeliceDeFrance", "DestinyFoods"];
     const supplierColors = {
         Bidfood: '#d42000',
         Reynolds: '#FF5733',
         Birtwistles: '#4e0b58',
         DeliceDeFrance: '#1d43da',
         DestinyFoods: '#3299c5'
+    };
+    const supplierFilters = { 
+        Bidfood: false,
+        Reynolds: false,
+        Birtwistles: false,
+        DeliceDeFrance: false,
+        DestinyFoods: false
     };
 
     let showAddRow = false; 
@@ -36,8 +48,8 @@
             products = fetchedProducts.sort((a, b) => a.Product.localeCompare(b.Product));
             products.forEach(item => {
                 if(item.selected){
-                    console.log(`selected from db: ${item.Product}`);
                     selectedItems.push(item.Product);
+                    selectedItemIds.push(item.id);
                 }
             });
         } catch (error) {
@@ -46,48 +58,110 @@
     };
 
     const removeItem = async (productName) => {
+        console.log(`removing: ${productName}`);
         try {
-            const item = products.filter(product => product.Product === productName);
-            removedItems.push(products.filter(product => product.Product === productName));
-            products = products.filter(product => product.Product !== productName);
+            const item = products.find(product => product.Product === productName);
+            let index = -1;
+            if (item.selected) {
+                index = selectedItems.indexOf(productName);
+                if (index > -1) {
+                    selectedCount--;
+                    selectedItems = [
+                        ...selectedItems.slice(0, index),
+                        ...selectedItems.slice(index + 1)
+                    ];
+                    selectedItemIds = [
+                        ...selectedItemIds.slice(0, index),
+                        ...selectedItemIds.slice(index + 1)
+                    ];
+                }
+            }
 
+            let product = {};
+            // remove item from products and filtered arrays
+            product = products.find(p => p.Product === productName);
+            index = products.indexOf(product);
+            if (index > -1) {
+                products = [
+                    ...products.slice(0, index),
+                    ...products.slice(index + 1)
+                ];
+            }
+
+            product = filtered.find(p => p.Product === productName);
+            index = filtered.indexOf(product);
+            if (index > -1) {
+                filtered = [
+                    ...filtered.slice(0, index),
+                    ...filtered.slice(index + 1)
+                ];
+            }
+
+            // keep track of newly removed items
+            removedItems.push(item);
+
+            // remove from addedItems if it was added during this session
             if (addedItems.some(new_item => new_item.Product === item.Product)) {
                 addedItems = addedItems.filter(new_item => new_item.Product !== item.Product);
             }
+
         } catch (error) {
             console.error('Error removing item:', error);
         }
     };
 
-    const toggleSelection = (product) => {
-        const productName = product.Product;
-        const index = selectedItems.indexOf(productName);
 
-        if (index === -1) {
+    const toggleSelection = (product) => {
+        const productId = product.id;
+        const productName = product.Product;
+
+        // update the selected state of the product in the array (reflect in UI)
+        products = products.map(p =>
+            p.id === productId ? { ...p, selected: !p.selected } : p
+        );
+        filtered = filtered.map(p =>
+            p.id === productId ? { ...p, selected: !p.selected } : p
+        );
+
+        // update selectedItems list and selectedCount accordingly
+        const selectedItem = products.find(p => p.id === productId);
+        if (selectedItem.selected) {
             selectedCount++;
             selectedItems = [...selectedItems, productName];
-            products.find(p => p.Product === productName).selected = true;
-            console.log(`selected ${product}`);
-        } else if (index !== -1 || product.selected) {
-            selectedCount--;
-            products.find(p => p.Product === productName).selected = false;
-            selectedItems = selectedItems.filter(item => item !== productName);
-            console.log(`deselected ${product}`);
+            selectedItemIds = [...selectedItemIds, selectedItem.id];
+        } else {
+            const index = selectedItems.indexOf(productName);
+            if (index > -1) {
+                selectedCount--;
+                selectedItems = [
+                    ...selectedItems.slice(0, index),
+                    ...selectedItems.slice(index + 1)
+                ];
+
+                selectedItemIds = [
+                    ...selectedItems.slice(0, index),
+                    ...selectedItems.slice(index + 1)
+                ];
+            }
         }
     };
+
+
+
 
 
     const toggleSelectAll = () => {
         if (selectedCount > 0) {
             selectedCount = 0;
             selectedItems = [];
+            selectedItemIds = [];
             products.forEach(item => item.selected = false);
         } else {
             selectedCount = products.length;
             selectedItems = products.map(product => product.Product);
+            selectedItemIds = products.map(product => product.Product);
             products.forEach(item => item.selected = true);
         }
-        console.log(`selected items: ${selectedItems.length}/${products.filter(item => item.selected = true)}`);
     };
 
 
@@ -102,6 +176,7 @@
             newProduct.id = item_id;
             addedItems.push(newProduct);
             products = [newProduct, ...products];
+            filtered = [newProduct, ...filtered];
             newProduct = { Product: '', Quantity: '', Supplier: '', Frozen: 'No' };
             showAddRow = false;
 
@@ -118,7 +193,6 @@
 
     const updateDatabase = async () => {
         try {
-            console.log(`selected changes: ${products.filter(item => selectedItems.includes(item.Product))}`);
             const data = {
                 toAdd: addedItems,
                 toRemove: removedItems,
@@ -142,6 +216,7 @@
         }
     };
 
+    let saveStatus = '';
     const confirmSave = async () => {
         const modal = {
             type: 'confirm',
@@ -150,7 +225,17 @@
             response: async (r) => {
                 if (r) {
                     console.log('saving...');
-                    await updateDatabase();
+                    try {
+                        await updateDatabase();
+                        saveStatus = 'success'; // set the status to success
+                    } catch (error) {
+                        console.error('Error during save:', error);
+                        saveStatus = 'error'; // set the status to error if something goes wrong
+                    } finally {
+                        setTimeout(() => {
+                            saveStatus = ''; // reset the status after a short delay
+                        }, 1500);
+                    }
                 }
             }
         };
@@ -345,9 +430,65 @@
         }
     };
 
-    const reverseProducts = () => {
-        products = [...products].reverse();
+    const suppliersFilterClick = (supplier) => {
+        supplierFilters[supplier] = !supplierFilters[supplier];
+
+        // filter on active suppliers
+        const activeSuppliers = Object.keys(supplierFilters).filter(key => supplierFilters[key]);
+
+        if (activeSuppliers.length > 0) {
+            filtered = products.filter(item => activeSuppliers.includes(item.Supplier));
+        } 
+        else {
+            filtered = products; // show all products if no filter
+        }
     }
+
+
+    const reverseProducts = () => {
+        filtered = [...filtered].reverse();
+    }
+
+    const filterFrozen = () => {
+        frozenFilterCount++;
+        filtered = products;
+        const activeSuppliers = Object.keys(supplierFilters).filter(key => supplierFilters[key]);
+
+        if (activeSuppliers.length > 0) {
+            filtered = products.filter(item => activeSuppliers.includes(item.Supplier));
+        } else {
+            filtered = products;
+        }
+        
+        if(frozenFilterCount == 4){
+            frozenFilterCount = 0;
+            return;
+        }
+
+        if (frozenFilter === 'Frozen') {
+            frozenFilter = 'Chilled';
+        } 
+        else if (frozenFilter === 'Chilled') {
+            frozenFilter = 'Ambient';
+        } 
+        else {
+            frozenFilter = 'Frozen';
+        }
+
+        // cannot apply multiple filters without overfiltering if using filtered instead of products
+        // if a filter returns no items, it's saved and you cannot filter back to it
+        filtered = filtered.filter(item => {
+            if (frozenFilter === 'Ambient') {
+                return item.Frozen === 'No';
+            } else if (frozenFilter === 'Chilled') {
+                return item.Frozen === 'Chilled';
+            } else {
+                return item.Frozen === 'Yes';
+            }
+        });
+    };
+
+
 
     onMount(async () => {
         setTimeout(() => {
@@ -356,7 +497,7 @@
 
         await getFromSupplier();
         selectedCount = selectedItems.length;
-        console.log(`selected items: ${selectedItems}`);
+        filtered = products;
     });
 </script>
 
@@ -406,7 +547,7 @@
         opacity: 0;
         transition: opacity 1s ease-in-out;
         overflow-y: auto; /* enable vertical scrolling */
-        max-height: 95vh; /* max height to control the scrollable area */
+        max-height: 99vh; /* max height to control the scrollable area */
     }
 
     .fade-in {
@@ -464,12 +605,23 @@
     .badge {
         margin: 0;
         padding: 7px 13px;
-        border-radius: 0.5vw;
-        font-size: 2.2vh;
+        border-radius: 0.28vw;
+        font-size: 2.1vh;
         font-family: Arial;
         letter-spacing: 0.5px;
-        color: #d1dfda;
         display: inline-block;
+    }
+
+    .filter-badge {
+        margin: 0;
+        padding: 4px 13px;
+        border-radius: 0.28vw;
+        font-size: 1.75vh;
+        font-family: Arial;
+        letter-spacing: 0.5px;
+        display: inline-block;
+        height: 4vh;
+        cursor: pointer;
     }
 
     .no-spacing td {
@@ -501,13 +653,13 @@
         cursor: pointer;
         color: #ffffff;
         transition: transform 0.15s ease-in-out;
-        font-size: 3vh;
+        font-size: 1.6rem;
         margin-right: 1vw;
         margin-left: 1.5vw;
     }
 
     .trash-button:hover {
-        transform: scale(1.25);
+        transform: scale(1.2);
         color: #de3933;
         animation: shake 0.75s ease-in-out infinite;
     }
@@ -551,8 +703,8 @@
 
     .table-container {
         overflow-y: auto;
-        max-height: 75vh; /* max height of the table container */
-        margin-top: 3vh;
+        max-height: 73vh; /* max height of the table container */
+        margin-top: 0vh;
     }
 
 
@@ -630,6 +782,16 @@
         background-color: #fff;
     }
 
+    .confirm-button.success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .confirm-button.error {
+        background-color: #dc3545;
+        color: white;
+    }
+
     .cancel-button {
         padding: 10px 15px;
         background-color: #d9534f;
@@ -655,6 +817,108 @@
         font-size: 1.5em;
         transition: opacity 0.3s;
     }
+
+    .flex-buttons-mobile {
+        display: none;
+    }
+
+    .select-all {
+        display: none;
+    }
+
+    @media (max-width: 1000px) {
+        .name {
+            font-size: 0.8rem;
+        }
+
+        .headers {
+            font-size: 0.8rem;
+        }
+
+        .select-all {
+            display: block;
+        }
+
+        .table-container {
+            width: 97vw;
+            transform: translateX(-5.4vw) translateY(-3vh);
+        }
+
+        .info {
+            transform: translateX(-2.5vw);
+        }
+
+        th, td {
+            line-height: 1;
+            height: 55px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .badge {
+            margin: 0;
+            padding: 3px 9px;
+            border-radius: 0.28vw;
+            font-size: 0.7rem;
+            font-family: Arial;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        .filter-badge {
+            margin: 0;
+            padding: 4px 13px;
+            border-radius: 0.28vw;
+            font-size: 0.7rem;
+            font-family: Arial;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            height: 2rem;
+            cursor: pointer;
+            align-content: center;
+        }
+
+        .toggle-button {
+            transform: scale(0.8) translateY(-12.5%);
+        }
+
+        .trash-button {
+            transform: scale(0.9);
+        }
+
+        .divider {
+            height: 30px;
+            margin-right: 0.5vw;
+            scale: 1.2;
+        }
+
+        .flex-buttons {
+            display: none;
+        }
+
+        .export {
+            display: none;
+        }
+
+        .flex-buttons-mobile {
+            display:flex;
+            transform: scale(0.75) translateX(-15%) translateY(-20%);
+        }
+
+        .add-form {
+            font-size: 0.75em;
+        }
+
+        .confirm-button {
+            transform: scale(0.85);
+            width: 4.75rem;
+        }
+
+        .cancel-button {
+            transform: scale(0.9);
+        }
+    }
 </style>
 
 <div class="background {fadeIn ? 'fade-in' : ''}">
@@ -662,22 +926,56 @@
         <div class="background-overlay"></div>
         <div class="content {fadeIn ? 'fade-in' : ''} ml-[3vw] mr-[3vw] pl-[1.25vw] pr-[5vw]">
 
-            <div class="total-count flex mt-[3vh] ml-[4vw]">
-                <span>{products.length}</span>
-                <span class="ml-[0.5vw] text-[0.8em]">total</span>
-                <span class="ml-[0.5vw] text-[0.8em] mr-[2vw]">items</span>
+            <div class="flex-col info">
+                <div class="total-count flex mt-[3vh] ml-[4vw]">
+                    <span class="text-[0.9em]">{filtered.length}</span>
+                    <span class="ml-[0.5vw] text-[0.7em] mr-[2vw]">items</span>
 
-                <span>{selectedCount}</span>
-                <span class="ml-[0.5vw] text-[0.8em]">selected</span>
-                <span class="ml-[0.5vw] text-[0.8em]">items</span>
+                    <span class="text-[0.9em]">{selectedCount}</span>
+                    <span class="ml-[0.5vw] text-[0.7em]">selected</span>
+                    <span class="ml-[0.5vw] text-[0.7em]">items</span>
+                </div>
+                <div class="flex mt-[4vh]">
+                    <i on:click={reverseProducts} class="bi bi-sort-alpha-down ml-[4vw] bg-[#26342c] backdrop-blur-md rounded-md hover:cursor-pointer px-[5px] py-[5px]" style="font-size: 40px; transform: translateY(-20%); border: 1px solid #496d5a;"></i>
+                    <i on:click={filterFrozen} class="bi bi-snow ml-[1vw] bg-[#26342c] backdrop-blur-md rounded-md hover:cursor-pointer px-[5px] py-[5px]" style="font-size: 40px; transform: translateY(-20%); border: 1px solid #496d5a;"></i>
+                    <div class="flex ml-[2vw] gap-[0.75vw]">
+                        {#each suppliers as supplier}
+                            {#if supplierFilters[supplier]}
+                                <span class="filter-badge"
+                                    style="background-color: {getBadgeColor(supplier)}"
+                                    on:click={() => suppliersFilterClick(supplier)}>
+                                    <i class="bi bi-x-lg mr-[0.35vw]"></i>{supplier}
+                                </span>
+                            {:else}
+                                <span class="filter-badge"
+                                    style="background-color: #222423"
+                                    on:click={() => suppliersFilterClick(supplier)}>
+                                    {supplier}
+                                </span>
+                            {/if}
+                        {/each}
+                    </div>
+                </div>
+                <div class="flex-buttons-mobile">
+                    <div class="add-container ml-[4vw] fade-in hover:cursor-pointer" on:click={() => showAddRow = true}>
+                        <i class="bi bi-file-plus rotate-90 text-[#d1dfda] scale-[1.25]"></i>
+                    </div>
 
-                <i on:click={reverseProducts} class="bi bi-sort-alpha-down ml-[3vw] bg-[#26342c] backdrop-blur-md rounded-md" style="font-size: 40px; transform: translateY(-20%); border: 1px solid #496d5a;"></i>
+                    <div class="ml-[2vw]">
+                        <button
+                            class="confirm-button mt-[1.2rem] w-[9vw] font-semibold {saveStatus === 'success' ? 'success' : ''} {saveStatus === 'error' ? 'error' : ''}"
+                            on:click={confirmSave}>
+                            Save
+                        </button>
+                        <button class="confirm-button mt-[0.5vh] w-[9vw] font-semibold" on:click={confirmExport}>Export</button>
+                    </div>
+                </div>
             </div>
 
             <div class="table-container">
-                <table class="table-compact w-full mt-[0vh] no-spacing">
+                <table class="table-traslate table-compact w-full no-spacing mt-[1vh]">
                     <thead>
-                        <tr>
+                        <tr class="headers">
                             <th class="item-count"></th>
                             <th on:click={toggleSelectAll} class="hover:cursor-pointer">Select</th>
                             <th>Product</th>
@@ -694,9 +992,9 @@
                                     <button on:click={addProduct} class="confirm-button">Add</button>
                                     <button class="cancel-button" on:click={cancelAddProduct}>Cancel</button>
                                 </td>
-                                <td><input type="text" bind:value={newProduct.Product} placeholder="Product" /></td>
-                                <td><input type="text" bind:value={newProduct.Quantity} placeholder="Quantity" /></td>
-                                <td><input type="text" bind:value={newProduct.Supplier} placeholder="Supplier" /></td>
+                                <td><input class="add-form" type="text" bind:value={newProduct.Product} placeholder="Product" /></td>
+                                <td><input class="add-form" type="text" bind:value={newProduct.Quantity} placeholder="Quantity" /></td>
+                                <td><input class="add-form" type="text" bind:value={newProduct.Supplier} placeholder="Supplier" /></td>
                                 <td>
                                     <select bind:value={newProduct.Frozen}>
                                         <option value="Yes">Yes</option>
@@ -706,20 +1004,20 @@
                             </tr>
                         {/if}
 
-                        {#each products as product, index}
+                        {#each filtered as product, index}
                             <tr class="spacing-x">
                                 <td class="item-count">{index + 1}</td>
                                 <td class="flex justify-center">
                                     <button
-                                        class={`toggle-button ${selectedItems.includes(product.Product)  || product.selected ? 'selected' : ''}`}
+                                        class={`toggle-button ${product.selected && selectedItemIds.includes(product.id)? 'selected' : ''}`}
                                         on:click={() => toggleSelection(product)}>
-                                        {#if selectedItems.includes(product.Product)}
-                                            <i class="bi bi-check-lg tick-icon"></i>
+                                        {#if product.selected === true || selectedItemIds.includes(product.id)}
+                                            <i class="bi bi-check-lg tick-icon tick"></i>
                                         {/if}
                                     </button>
                                 </td>
 
-                                <td class="flex-row justify-start font-semibold bg-[#26342c] rounded-lg pl-[2vw] border-[#000000] border-md">
+                                <td class="name flex-row justify-start font-semibold bg-[#26342c] rounded-lg pl-[2vw] border-[#000000] border-md">
                                     <div class="product-info">
                                         <i class="bi bi-trash3-fill trash-button" on:click={() => removeItem(product.Product)}></i>
                                         <div class="divider"></div>
@@ -727,14 +1025,16 @@
                                     </div>
                                 </td>
 
-                                <td class="bg-[#26342c] rounded-lg border-[#000000] border-md">
+                                <td class="name bg-[#26342c] rounded-lg border-[#000000] border-md">
                                     {product.Quantity}
                                 </td>
                                 <td class="bg-[#26342c] rounded-lg border-[#000000] border-md">
                                     <span class="badge" style="background-color: {getBadgeColor(product.Supplier)}">{product.Supplier}</span>
                                 </td>
-                                <td class="bg-[#26342c] rounded-lg border-[#000000] border-md">
-                                    <span class="badge bg-[#0091eb]">{(product.Frozen == "Yes") ? "Frozen" : "Ambient"}</span>
+                                <td class="bg-[#26342c] rounded-lg border-[#000000] border-md px-0">
+                                    <span class={(product.Frozen === "Yes")? "badge bg-[#0091eb] text-[#d1dfda]" : (product.Frozen === "Chilled")? "badge bg-[#59a8d8] text-white" : "badge bg-[#d1dfda] text-[#324c3f]"}>
+                                        {(product.Frozen === "Yes") ? "Frozen" : (product.Frozen === "Chilled") ? "Chilled" : "Ambient"}
+                                    </span>
                                 </td>
                             </tr>
                         {/each}
@@ -748,11 +1048,11 @@
                         <i class="bi bi-file-plus rotate-90 text-[#d1dfda] scale-[1.25]"></i>
                     </div>
 
-                    <div class="ml-[11vw] mt-[1vh]">
+                    <div class="ml-[11vw] export">
                         {#each ['Export All', 'Export View', 'Export Selected'] as e}
                             <button
                                 class="chip {choice === e ? 'variant-filled' : 'variant-soft'} ml-[0.5vw]"
-                                on:click={() => { choice = e; console.log(e) }}
+                                on:click={() => { choice = e}}
                                 on:keypress
                             >
                                 {#if choice === e}(<span><i class="bi bi-check-lg tick-icon"></i></span>){/if}
@@ -761,11 +1061,11 @@
                         {/each}
                     </div>
 
-                    <div class="ml-[1vw] mt-[1vh]">
+                    <div class="ml-[1vw] export">
                         {#each ['Export Excel', 'Export PDF'] as f}
                             <button
                                 class="chip {fileType === f ? 'variant-filled' : 'variant-soft'} ml-[0.5vw]"
-                                on:click={() => { fileType = f; console.log(f)}}
+                                on:click={() => { fileType = f}}
                                 on:keypress
                             >
                                 {#if fileType === f}(<span><i class="bi bi-check-lg tick-icon"></i></span>){/if}
@@ -775,7 +1075,11 @@
                     </div>
 
                     <div class="ml-[5vw]">
-                        <button class="confirm-button mt-[0.5vh] w-[9vw] font-semibold" on:click={confirmSave}>Save</button>
+                        <button
+                            class="confirm-button mt-[0.5vh] w-[9vw] font-semibold {saveStatus === 'success' ? 'success' : ''} {saveStatus === 'error' ? 'error' : ''}"
+                            on:click={confirmSave}>
+                            Save
+                        </button>
                         <button class="confirm-button mt-[0.5vh] w-[9vw] font-semibold" on:click={confirmExport}>Export</button>
                     </div>
                 </div>

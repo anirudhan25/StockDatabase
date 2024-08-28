@@ -100,61 +100,62 @@ const addItem = async (req, res) => {
 
 const updateDatabase = async (req, res) => {
     const uri = process.env.MONGODB_URI;
-    const client = new MongoClient(uri);
-    try {
-        await client.connect();
-        const database = client.db('StockDB');
-        const collection = database.collection('Stock');
-        console.log("Updating database...");
+    const client = new MongoClient(uri, {
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+        connectTimeoutMS: 10000
+    });
 
-        const { toAdd, toRemove, selectedChanges} = req.body;
-        const itemsToAdd = toAdd.flat();
-        const itemsToRemove = toRemove.flat();
+    const maxRetries = 3;
+    let retries = 0;
+    while (retries < maxRetries) {
+        try {
+            await client.connect();
+            const database = client.db('StockDB');
+            const collection = database.collection('Stock');
 
-        // insert new items first
-        if (itemsToAdd.length > 0) {
-            await Stock.insertMany(itemsToAdd);
+            const { toAdd, toRemove, selectedChanges} = req.body;
+            const itemsToAdd = toAdd.flat();
+            const itemsToRemove = toRemove.flat();
+
+            if (itemsToAdd.length > 0) {
+                await collection.insertMany(itemsToAdd);
+            }
+
+            await collection.updateMany({}, { $set: { selected: false } });
+            const result = await collection.updateMany(
+                { Product: { $in: selectedChanges } },
+                { $set: { Frozen: 'Chilled' } }
+            );
+
+            const idsToRemove = itemsToRemove.map(item => item._id || item.id);
+            const objectIds = idsToRemove.filter(id => mongoose.Types.ObjectId.isValid(id));
+            const stringIds = idsToRemove.filter(id => !mongoose.Types.ObjectId.isValid(id));
+
+            if (stringIds.length > 0) {
+                await collection.deleteMany({ id: { $in: stringIds } });
+            }
+
+            if (objectIds.length > 0) {
+                await collection.deleteMany({ _id: { $in: objectIds } });
+            }
+
+            res.status(201).json('Database updated.');
+            return;
+        } catch (err) {
+            retries++;
+            if (retries >= maxRetries) {
+                console.error("Error updating database:", err);
+                res.status(500).json({ error: err.message });
+            } else {
+                console.warn(`Retrying... (${retries}/${maxRetries})`);
+            }
+        } finally {
+            await client.close();
         }
-
-        await collection.updateMany(
-            {},
-            { $set: { selected: false } }
-        );
-
-        const result = await collection.updateMany(
-            { Product: { $in: selectedChanges } },
-            { $set: { selected: true } }
-        );
-        console.log(result);
-
-        // separate IDs into normal strings and ObjectId
-        const idsToRemove = itemsToRemove.map(item => item._id || item.id);
-        
-        const objectIds = idsToRemove.filter(id => mongoose.Types.ObjectId.isValid(id));
-        const stringIds = idsToRemove.filter(id => !mongoose.Types.ObjectId.isValid(id));
-
-        console.log("Items to add", itemsToAdd);
-        console.log("Items to remove:", itemsToRemove);
-        console.log("IDs to remove:", idsToRemove);
-        console.log("ObjectIDs to remove:", objectIds);
-        console.log("String IDs to remove:", stringIds);
-
-        // delete by `id` for normal string IDs
-        if (stringIds.length > 0) {
-            await Stock.deleteMany({ id: { $in: stringIds } });
-        }
-
-        // delete by `_id` for ObjectId
-        if (objectIds.length > 0) {
-            await Stock.deleteMany({ _id: { $in: objectIds } });
-        }
-
-        res.status(201).json('Database updated.');
-    } catch (err) {
-        console.error("Error updating database:", err);
-        res.status(500).json({ error: err.message });
     }
 };
+
 
 
 
@@ -274,7 +275,7 @@ const exportPDF = async (req, res) => {
         });
 
         doc.moveDown();
-        doc.strokeColor('#aaaaaa').lineWidth(1).moveTo(50, doc.y).lineTo(150, doc.y).stroke();
+        doc.strokeColor('#aaaaaa').lineWidth(1).moveTo(50, doc.y).lineTo(250, doc.y).stroke();
         doc.moveDown();
 
         const middleX = doc.page.width / 2;
@@ -294,7 +295,7 @@ const exportPDF = async (req, res) => {
                     doc.fontSize(12).text(header, { width: columnWidths[i], continued: i < headers.length - 1 });
                 });
                 doc.moveDown();
-                doc.strokeColor('#aaaaaa').lineWidth(1).moveTo(50, doc.y).lineTo(150, doc.y).stroke();
+                doc.strokeColor('#aaaaaa').lineWidth(1).moveTo(50, doc.y).lineTo(250, doc.y).stroke();
                 doc.moveDown();
 
                 currentY = doc.y;

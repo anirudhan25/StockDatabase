@@ -37,6 +37,12 @@
   .login-container {
     transition: transform 0.5s ease, opacity 0.5s ease;
   }
+
+  @media (max-width: 1000px) {
+    .headers {
+      font-size: 0.9em;
+    }
+  }
 </style>
 
 <div
@@ -54,7 +60,7 @@
 
       <form class="flex flex-col items-center p-0 w-full mt-[12vh]" on:submit|preventDefault={handleClick}>
         
-        <h2 class="text-black text-lg mb-3 self-start text-[1.5vw] font-serif">Username</h2>
+        <h2 class="headers text-black text-lg mb-3 self-start text-[1.5vw] font-serif">Username</h2>
         <!-- container for person icon and username input field -->
         <div class="relative w-full">
           <i class="fas fa-user absolute left-3 top-[2.85vh] transform -translate-y-1/2 text-gray-500"></i>
@@ -65,7 +71,7 @@
           />
         </div>
 
-        <h2 class="text-black text-lg mb-3 self-start text-[1.5vw] font-serif">Password</h2>
+        <h2 class="headers text-black text-lg mb-3 self-start text-[1.5vw] font-serif">Password</h2>
         <!-- container for lock icon and password input field -->
         <div class="relative w-full">
           <i class="fas fa-lock absolute left-3 top-[2.85vh] transform -translate-y-1/2 text-gray-500"></i>
