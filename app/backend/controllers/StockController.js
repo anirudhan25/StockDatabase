@@ -100,6 +100,7 @@ const addItem = async (req, res) => {
 
 const updateDatabase = async (req, res) => {
     const uri = process.env.MONGODB_URI;
+    console.log(`uri: ${uri}`);
     const client = new MongoClient(uri, {
         serverSelectionTimeoutMS: 10000,
         socketTimeoutMS: 45000,
@@ -110,6 +111,7 @@ const updateDatabase = async (req, res) => {
     let retries = 0;
     while (retries < maxRetries) {
         try {
+            console.log('connecting to DB')
             await client.connect();
             const database = client.db('StockDB');
             const collection = database.collection('Stock');
@@ -121,13 +123,14 @@ const updateDatabase = async (req, res) => {
             if (itemsToAdd.length > 0) {
                 await collection.insertMany(itemsToAdd);
             }
-
+    
             await collection.updateMany({}, { $set: { selected: false } });
             const result = await collection.updateMany(
                 { Product: { $in: selectedChanges } },
-                { $set: { Frozen: 'Chilled' } }
+                { $set: { selected: true } }
             );
 
+            console.log(`separating object & string Ids`);
             const idsToRemove = itemsToRemove.map(item => item._id || item.id);
             const objectIds = idsToRemove.filter(id => mongoose.Types.ObjectId.isValid(id));
             const stringIds = idsToRemove.filter(id => !mongoose.Types.ObjectId.isValid(id));
@@ -178,7 +181,7 @@ const removeItem = async (req, res) => {
 
 const exportExcel = async (req, res) => {
     console.log('exporting to excel.');
-    const uri = process.env.MONGODB_URI;
+    const uri = process.env.MONGODB_URI
     const client = new MongoClient(uri);
 
     try {
@@ -224,27 +227,34 @@ const exportExcel = async (req, res) => {
 }
 
 const exportPDF = async (req, res) => {
-    console.log('\nexporting to pdf.');
+    console.log('\nexporting to pdf');
     const uri = process.env.MONGODB_URI;
     const client = new MongoClient(uri);
 
     try {
+        console.log(`trying to connect...`);
         await client.connect();
+        console.log(`database connected`);
         const database = client.db('StockDB');
         const collection = database.collection('Stock');
         let data;
 
         if (Object.keys(req.body).length > 0) {
+            console.log(`exporting based on filter`);
             // field like { items: ["item1", "item2", "item3"] }
             const itemNames = req.body.items;
+            console.log(`items: ${itemNames}`)
             
             // filter collection based on item names provided in the request body
             data = await collection.find({ Product: { $in: itemNames } }).toArray();
-        } else {
+        } 
+        else {
+            console.log(`exporting all`)
             // if no filter is provided, retrieve all items
             data = await collection.find({}).toArray();
         }
 
+        console.log(`sorting data`);
         data.sort((a, b) => {
             if (a.Product < b.Product) return -1;
             if (a.Product > b.Product) return 1;
@@ -253,6 +263,7 @@ const exportPDF = async (req, res) => {
 
         const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
+        console.log(`setting response headers`);
         res.setHeader('Content-Disposition', 'attachment; filename="output.pdf"');
         res.setHeader('Content-Type', 'application/pdf');
 
@@ -322,6 +333,7 @@ const exportPDF = async (req, res) => {
 
             currentY += 20;
         });
+        console.log(`rendered pdf`);
 
         doc.end();
     } catch (error) {
