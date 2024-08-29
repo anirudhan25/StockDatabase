@@ -40,7 +40,7 @@
 
   @media (max-width: 1000px) {
     .headers {
-      font-size: 0.9em;
+      font-size: 0.8em;
     }
   }
 </style>

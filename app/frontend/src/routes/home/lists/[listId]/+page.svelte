@@ -27,7 +27,7 @@
         DeliceDeFrance: '#1d43da',
         DestinyFoods: '#3299c5'
     };
-    const supplierFilters = { 
+    let supplierFilters = { 
         Bidfood: false,
         Reynolds: false,
         Birtwistles: false,
@@ -475,8 +475,6 @@
             frozenFilter = 'Frozen';
         }
 
-        // cannot apply multiple filters without overfiltering if using filtered instead of products
-        // if a filter returns no items, it's saved and you cannot filter back to it
         filtered = filtered.filter(item => {
             if (frozenFilter === 'Ambient') {
                 return item.Frozen === 'No';
@@ -489,6 +487,20 @@
     };
 
 
+    const search = () => {
+        filtered = products;
+        const searchQuery = document.getElementById('search-input').value.toLowerCase();
+
+        if (searchQuery.length === 0) {
+            filtered = products;
+        }
+        if (searchQuery.length < 3) {
+            return;
+        }
+
+        filtered = filtered.filter(item => item.Product.toLowerCase().includes(searchQuery));
+        supplierFilters = {}
+    };
 
     onMount(async () => {
         setTimeout(() => {
@@ -593,15 +605,6 @@
         scale: 1.01;
     }
 
-    .card dt,
-    .card dd {
-        color: #174b2e;
-    }
-
-    .card dd {
-        margin-top: 0.5em;
-    }
-
     .badge {
         margin: 0;
         padding: 7px 13px;
@@ -611,6 +614,24 @@
         letter-spacing: 0.5px;
         display: inline-block;
         cursor:default;
+    }
+    
+    .badge:hover {
+        transform: scale(1.06);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .badge:hover::before {
+        content: attr(data-text-hover);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        color: inherit;
+        background-color: inherit;
+        border-radius: inherit;
+        padding: inherit;
     }
 
     .filter-badge {
@@ -653,7 +674,7 @@
     .trash-button {
         cursor: pointer;
         color: #ffffff;
-        transition: transform 0.15s ease-in-out;
+        transition: transform 0.2s ease-in-out;
         font-size: 1.6rem;
         margin-right: 1vw;
         margin-left: 1.5vw;
@@ -827,6 +848,18 @@
         display: none;
     }
 
+    .search-bar {
+        width: 25vw;
+        background-color: #496d5a;
+        outline: none;
+    }
+
+    .search-bar:focus {
+        outline: none;
+        border-width: 0px;
+        outline-width: 0px;
+    }
+
     @media (max-width: 1000px) {
         .name {
             font-size: 0.8rem;
@@ -929,12 +962,12 @@
 
             <div class="flex-col info">
                 <div class="total-count flex mt-[3vh] ml-[4vw]">
-                    <span class="text-[0.9em]">{filtered.length}</span>
-                    <span class="ml-[0.5vw] text-[0.7em] mr-[2vw]">items</span>
+                    <span class="text-[0.95em]">{filtered.length}</span>
+                    <span class="ml-[0.5vw] text-[0.8em] mr-[2vw]">items</span>
 
-                    <span class="text-[0.9em]">{selectedCount}</span>
-                    <span class="ml-[0.5vw] text-[0.7em]">selected</span>
-                    <span class="ml-[0.5vw] text-[0.7em]">items</span>
+                    <span class="text-[0.95em]">{selectedCount}</span>
+                    <span class="ml-[0.5vw] text-[0.8em]">selected</span>
+                    <span class="ml-[0.5vw] text-[0.8em]">items</span>
                 </div>
                 <div class="flex mt-[4vh]">
                     <i on:click={reverseProducts} class="bi bi-sort-alpha-down ml-[4vw] bg-[#26342c] backdrop-blur-md rounded-md hover:cursor-pointer px-[5px] py-[5px]" style="font-size: 40px; transform: translateY(-20%); border: 1px solid #496d5a;"></i>
@@ -957,6 +990,7 @@
                         {/each}
                     </div>
                 </div>
+
                 <div class="flex-buttons-mobile">
                     <div class="add-container ml-[4vw] fade-in hover:cursor-pointer" on:click={() => showAddRow = true}>
                         <i class="bi bi-file-plus rotate-90 text-[#d1dfda] scale-[1.25]"></i>
@@ -971,10 +1005,16 @@
                         <button class="confirm-button mt-[0.5vh] w-[9vw] font-semibold" on:click={confirmExport}>Export</button>
                     </div>
                 </div>
+
+                <div class="ml-[62vw] translate-y-[-140%] search-bar">
+                    <i class="bi bi-search ml-[1vw] text-[#bae4d1]"></i>
+                    <input type="text" id="search-input" class="search-input text-white focus:outline-0 bg-[#3d5b4b] border-none outline-none w-[22vw] ml-[0.575vw]" on:input={() => search()}>
+                </div>
             </div>
 
-            <div class="table-container">
-                <table class="table-traslate table-compact w-full no-spacing mt-[1vh]">
+            <div class="translate-y-[-6%]">
+                <div class="table-container">
+                <table class="table-compact w-full no-spacing">
                     <thead>
                         <tr class="headers">
                             <th class="item-count"></th>
@@ -1030,10 +1070,12 @@
                                     {product.Quantity}
                                 </td>
                                 <td class="bg-[#26342c] rounded-lg border-[#000000] border-md">
-                                    <span class="badge" style="background-color: {getBadgeColor(product.Supplier)}">{product.Supplier}</span>
+                                    <span class="badge" data-text-hover={product.Supplier} style="background-color: {getBadgeColor(product.Supplier)}">{product.Supplier}</span>
                                 </td>
                                 <td class="bg-[#26342c] rounded-lg border-[#000000] border-md px-0">
-                                    <span class={(product.Frozen === "Yes")? "badge bg-[#0091eb] text-[#d1dfda]" : (product.Frozen === "Chilled")? "badge bg-[#59a8d8] text-white" : "badge bg-[#d1dfda] text-[#324c3f]"}>
+                                    <span 
+                                        class={(product.Frozen === "Yes")? "badge bg-[#0091eb] text-[#d1dfda]" : (product.Frozen === "Chilled")? "badge bg-[#59a8d8] text-white" : "badge bg-[#d1dfda] text-[#324c3f]"} 
+                                        data-text-hover={(product.Frozen === "Yes") ? "-18ºC" : (product.Frozen === "Chilled") ? "0-5ºC" : "5-60ºC"}>
                                         {(product.Frozen === "Yes") ? "Frozen" : (product.Frozen === "Chilled") ? "Chilled" : "Ambient"}
                                     </span>
                                 </td>
@@ -1086,5 +1128,6 @@
                 </div>
             {/if}
         </div>
+            </div>
     </div>
 </div>
