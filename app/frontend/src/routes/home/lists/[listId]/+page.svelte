@@ -310,7 +310,7 @@
             if(fileType === 'Export Excel'){
                 try {
                     const requestBody = {
-                        items: products.map(item => item.Product)
+                        items: filtered.map(item => item.Product)
                     };
 
                     const response = await axios.post(
@@ -339,7 +339,7 @@
             if(fileType === 'Export PDF'){
                 try {
                     const requestBody = {
-                        items: products.map(item => item.Product)
+                        items: filtered.map(item => item.Product)
                     };
 
                     const response = await axios.post(
@@ -610,6 +610,7 @@
         font-family: Arial;
         letter-spacing: 0.5px;
         display: inline-block;
+        cursor:default;
     }
 
     .filter-badge {
