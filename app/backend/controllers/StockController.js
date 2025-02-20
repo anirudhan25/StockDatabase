@@ -125,11 +125,12 @@ const updateDatabase = async (req, res) => {
             }
     
             await collection.updateMany({}, { $set: { selected: false } });
-            const result = await collection.updateMany(
+
+            await collection.updateMany(
                 { Product: { $in: selectedChanges } },
                 { $set: { selected: true } }
             );
-
+            
             console.log(`separating object & string Ids`);
             const idsToRemove = itemsToRemove.map(item => item._id || item.id);
             const objectIds = idsToRemove.filter(id => mongoose.Types.ObjectId.isValid(id));

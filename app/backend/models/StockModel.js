@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { coerceInteger } = require('openai/core');
 const Schema = mongoose.Schema;
 
 // structure of each item in the database
@@ -32,6 +33,11 @@ const stockSchema = new Schema({
     selected: {
         type: Boolean,
         required: false 
+    },
+
+    count: {
+        type: Number,
+        required: false
     }
 });
 

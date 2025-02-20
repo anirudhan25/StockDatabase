@@ -502,6 +502,22 @@
         supplierFilters = {}
     };
 
+
+    let editingId = null;
+    function startEditing(productId) {
+        editingId = productId; // set the row to be in edit mode
+    }
+
+    function saveChanges(productId) {
+        const product = products.find(p => p.id === productId);
+        // update the product in the database if needed
+
+        // reset the editingId to close the edit mode
+        editingId = null;
+    }
+
+    let count = 0;
+              
     onMount(async () => {
         setTimeout(() => {
             fadeIn = true;
@@ -860,6 +876,37 @@
         outline-width: 0px;
     }
 
+     .counter-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .counter-input {
+        width: 50px;
+        text-align: center;
+    }
+
+    .counter-display {
+        width: 50px;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .product-column {
+        width: 35%;
+        white-space: nowrap; /* prevents text from wrapping */
+        overflow: hidden;
+        text-overflow: ellipsis; /* add ellipsis if text overflows */
+    }
+
+    .quantity-column {
+        width: 50%; /* adjust this width to make the column narrower */
+        white-space: nowrap; /* prevents text from wrapping */
+        overflow: hidden;
+        text-overflow: ellipsis; /* add ellipsis if text overflows */
+        margin-left: 0;
+    }
+
     @media (max-width: 1000px) {
         .name {
             font-size: 0.8rem;
@@ -1006,7 +1053,7 @@
                     </div>
                 </div>
 
-                <div class="ml-[62vw] translate-y-[-140%] search-bar">
+                <div class="ml-[62vw] translate-y-[-140%] search-bar rounded-sm">
                     <i class="bi bi-search ml-[1vw] text-[#bae4d1]"></i>
                     <input type="text" id="search-input" class="search-input text-white focus:outline-0 bg-[#3d5b4b] border-none outline-none w-[22vw] ml-[0.575vw]" on:input={() => search()}>
                 </div>
@@ -1014,65 +1061,100 @@
 
             <div class="translate-y-[-6%]">
                 <div class="table-container">
-                <table class="table-compact w-full no-spacing">
-                    <thead>
-                        <tr class="headers">
-                            <th class="item-count"></th>
-                            <th on:click={toggleSelectAll} class="hover:cursor-pointer">Select</th>
-                            <th>Product</th>
-                            <th>Quantity</th>
-                            <th>Supplier</th>
-                            <th>Frozen</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {#if showAddRow}
-                            <tr>
-                                <td class="item-count"></td>
-                                <td>
-                                    <button on:click={addProduct} class="confirm-button">Add</button>
-                                    <button class="cancel-button" on:click={cancelAddProduct}>Cancel</button>
-                                </td>
-                                <td><input class="add-form" type="text" bind:value={newProduct.Product} placeholder="Product" /></td>
-                                <td><input class="add-form" type="text" bind:value={newProduct.Quantity} placeholder="Quantity" /></td>
-                                <td><input class="add-form" type="text" bind:value={newProduct.Supplier} placeholder="Supplier" /></td>
-                                <td>
-                                    <select bind:value={newProduct.Frozen}>
-                                        <option value="Yes">Yes</option>
-                                        <option value="No">No</option>
-                                    </select>
-                                </td>
+                    <table class="table-compact w-full no-spacing">
+                        <thead>
+                            <tr class="headers">
+                                <th class="item-count"></th>
+                                <th on:click={toggleSelectAll} class="hover:cursor-pointer">Select</th>
+                                <th class="product-column">Product</th>
+                                <th class="quantity-column">Quantity</th>
+                                <th>Supplier</th>
+                                <th>Frozen</th>
                             </tr>
-                        {/if}
+                        </thead>
+                        <tbody>
+                            {#each filtered as product, index}
+                                <tr class="spacing-x">
+                                    <td class="item-count">{index + 1}</td>
+                                    <td class="flex justify-center">
+                                        <button
+                                            class={`toggle-button ${product.selected && selectedItemIds.includes(product.id)? 'selected' : ''}`}
+                                            on:click={() => toggleSelection(product)}>
+                                            {#if product.selected === true || selectedItemIds.includes(product.id)}
+                                                <i class="bi bi-check-lg tick-icon tick"></i>
+                                            {/if}
+                                        </button>
+                                    </td>
 
-                        {#each filtered as product, index}
-                            <tr class="spacing-x">
-                                <td class="item-count">{index + 1}</td>
-                                <td class="flex justify-center">
-                                    <button
-                                        class={`toggle-button ${product.selected && selectedItemIds.includes(product.id)? 'selected' : ''}`}
-                                        on:click={() => toggleSelection(product)}>
-                                        {#if product.selected === true || selectedItemIds.includes(product.id)}
-                                            <i class="bi bi-check-lg tick-icon tick"></i>
-                                        {/if}
-                                    </button>
-                                </td>
+                                    <td class="name flex-row justify-start font-semibold bg-[#26342c] rounded-lg pl-[2vw] border-[#000000] border-md product-column">
+                                        <div class="product-info">
+                                            <i class="bi bi-trash3-fill trash-button" on:click={() => removeItem(product.Product)}></i>
+                                            <div class="divider"></div>
+                                            <!-- product quantity text or input field -->
+                                            {#if editingId === product.id}
+                                                <input 
+                                                    type="text" 
+                                                    bind:value={product.Product} 
+                                                    class="quantity-input ml-[0.5vw]"
+                                                />
+                                                <button class="confirm-button mr-[0.5vw]" on:click={() => saveChanges(product.id)}>Save</button>
+                                            {:else}
+                                                <span class="ml-[2vw]">{product.Product}</span>
+                                            {/if}
+                                        </div>
+                                    </td>
 
-                                <td class="name flex-row justify-start font-semibold bg-[#26342c] rounded-lg pl-[2vw] border-[#000000] border-md">
-                                    <div class="product-info">
-                                        <i class="bi bi-trash3-fill trash-button" on:click={() => removeItem(product.Product)}></i>
-                                        <div class="divider"></div>
-                                        <span>{product.Product}</span>
-                                    </div>
-                                </td>
+                                    <td class="name font-semibold bg-[#26342c] rounded-lg pl-[2vw] border-[#000000] border-md">
+                                        <div class="quantity-info flex justify-between items-center">
+                                            <!-- left-side counter buttons -->
+                                            <div class="flex items-center">
+                                                <div class="counter-display text-[1.25rem]">
+                                                    {#if editingId === product.id}
+                                                        <input 
+                                                            type="text" 
+                                                            bind:value={count} 
+                                                            class="min-w-[2rem] max-w-max-auto text-center text-[1rem]"
+                                                        />
+                                                    {:else}
+                                                        <span class="ml-[2vw]">{count}</span>
+                                                    {/if}
+                                                </div>
+                                                <!-- divider -->
+                                                <div class="divider h-full ml-[1.5rem] mx-[0.5rem] bg-white w-[1px]" class:hidden={editingId === product.id}></div>
+                                            </div>
 
-                                <td class="name bg-[#26342c] rounded-lg border-[#000000] border-md">
-                                    {product.Quantity}
-                                </td>
-                                <td class="bg-[#26342c] rounded-lg border-[#000000] border-md">
+                                            <!-- product quantity text or input field -->
+                                            {#if editingId === product.id}
+                                                <input 
+                                                    type="text" 
+                                                    bind:value={product.Quantity} 
+                                                    class="quantity-input ml-[0.5vw]"
+                                                />
+                                                <button class="confirm-button mr-[0.5vw]" on:click={() => saveChanges(product.id)}>Save</button>
+                                            {:else}
+                                                <span class="ml-[2vw]">{product.Quantity}</span>
+                                            {/if}
+
+                                            <!-- right-side divider and pencil icon -->
+                                            <div class="flex items-center ml-auto">
+                                                <!-- divider -->
+                                                <div class="divider h-full mx-[0.5rem] bg-white w-[1px]" class:hidden={editingId === product.id}></div>
+                                                <!-- pencil icon triggers edit mode -->
+                                                <i 
+                                                    class="bi bi-pencil-square mr-[1vw] text-[1.2rem] hover:text-[1.4rem] duration-200"
+                                                    on:click={() => startEditing(product.id)}
+                                                    class:hidden={editingId === product.id}
+                                                ></i>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                
+
+                                <td class="bg-[#26342c] rounded-lg border-[#000000] border-md w-[10]%">
                                     <span class="badge" data-text-hover={product.Supplier} style="background-color: {getBadgeColor(product.Supplier)}">{product.Supplier}</span>
                                 </td>
-                                <td class="bg-[#26342c] rounded-lg border-[#000000] border-md px-0">
+                                <td class="bg-[#26342c] rounded-lg border-[#000000] border-md w-[20%]">
                                     <span 
                                         class={(product.Frozen === "Yes")? "badge bg-[#0091eb] text-[#d1dfda]" : (product.Frozen === "Chilled")? "badge bg-[#59a8d8] text-white" : "badge bg-[#d1dfda] text-[#324c3f]"} 
                                         data-text-hover={(product.Frozen === "Yes") ? "-18ºC" : (product.Frozen === "Chilled") ? "0-5ºC" : "5-60ºC"}>
